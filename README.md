@@ -21,6 +21,8 @@ A first-person 3D Diwali mela that runs in the browser. Walk a ring of sixteen s
 - Sound is synthesised live with the Web Audio API. Shopkeeper voices use the browser's speech synthesis.
 - Progress (purse, bag, bangles, name) is saved in `localStorage`.
 - Live multiplayer runs on Supabase Realtime (project `phatake-bazaar`). `net.js` gives the game the same `room` interface it had as a claude.ai artifact: membership uses Realtime presence, while position, crackers and chat go out as throttled broadcasts. No database tables are used.
+- Before entering, each player types a name and picks an avatar (kurta, sherwani, lehenga or saree, in 8 colours and 4 skin tones). Friends see that look and name.
+- At any shop, the "Buying for" row lets you buy crackers, food, bangles, a balloon or a phirki for another player. It comes out of your purse, lands in their bag or hand, and everyone sees it in chat. Age limits apply to the recipient too.
 - Everyone on the link shares the open bazaar. "Start a private aangan" makes a code like `diya-4821`, and the invite link carries it (`/#diya-4821`) so friends land straight in it. If Realtime can't connect, the game falls back to solo play.
 
 ## Files

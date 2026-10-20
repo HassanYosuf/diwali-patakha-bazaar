@@ -32,7 +32,8 @@ function channel(name){
   ch.on('presence',{event:'join'},({key,newPresences})=>{if(key===me||closed)return;const n=newPresences&&newPresences[0]&&newPresences[0].n;
     const p=peers.get(key);if(p){if(typeof n==='string'&&!p.presence.n){p.presence.n=n;emit({joined:[],left:[],updated:[p]});}}else addPeer(key,{n:typeof n==='string'?n:''});
     if(mine)schedule(true);});
-  ch.on('presence',{event:'leave'},({key})=>{if(key===me||closed)return;const p=peers.get(key);if(!p)return;peers.delete(key);emit({joined:[],left:[p],updated:[]});});
+  // re-tracking (e.g. a name change) sends a leave for the old entry; only drop peers with nothing left
+  ch.on('presence',{event:'leave'},({key,currentPresences})=>{if(key===me||closed||(currentPresences&&currentPresences.length))return;const p=peers.get(key);if(!p)return;peers.delete(key);emit({joined:[],left:[p],updated:[]});});
   ch.on('broadcast',{event:'p'},({payload})=>{if(closed||!payload||typeof payload.peer!=='string'||payload.peer===me)return;
     const pres=payload.presence&&typeof payload.presence==='object'?payload.presence:{};
     const had=peers.has(payload.peer);const p=addPeer(payload.peer,pres);if(had){p.presence=pres;emit({joined:[],left:[],updated:[p]});}});

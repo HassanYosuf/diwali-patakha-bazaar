@@ -113,6 +113,23 @@ button.pill{cursor:pointer;}button.pill:hover{border-color:rgba(255,182,39,.55);
 .ages button{min-height:64px;border-radius:14px;border:1px solid rgba(255,182,39,.45);background:rgba(255,182,39,.08);color:var(--ink);font:800 16px var(--body);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;}
 .ages button small{font:600 12px var(--body);color:var(--muted);}
 .ages button:hover{background:rgba(255,182,39,.2);}
+.agecard.wide{width:min(520px,calc(100% - 32px));}
+.prof{display:flex;gap:14px;align-items:flex-start;}
+.prof canvas{width:150px;height:200px;flex:none;border-radius:14px;background:radial-gradient(circle at 50% 38%,rgba(255,182,39,.2),rgba(0,0,0,.28) 72%);border:1px solid var(--line);}
+.prof-opts{display:flex;flex-direction:column;gap:10px;flex:1;min-width:0;}
+.opt{display:flex;flex-direction:column;gap:6px;}
+.opt-l{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+.styles{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.styles button{height:34px;border-radius:10px;border:1px solid rgba(255,182,39,.45);background:rgba(255,182,39,.08);color:var(--ink);font:700 13px var(--body);cursor:pointer;}
+.styles button[aria-pressed="true"],.forrow button[aria-pressed="true"]{background:var(--marigold);color:#2a1300;border-color:var(--marigold);}
+.swatches{display:flex;flex-wrap:wrap;gap:7px;}
+.swatches button{width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,.22);cursor:pointer;padding:0;}
+.swatches button[aria-pressed="true"]{border-color:#fff;box-shadow:0 0 0 2px var(--marigold);}
+@media (max-width:440px){.prof{flex-direction:column;align-items:center;}.prof canvas{width:105px;height:140px;}.prof-opts{width:100%;}.agecard.wide{padding:18px;}}
+.forrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;width:100%;margin-bottom:2px;}
+.forrow .fl{font:800 11px var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:2px;}
+.forrow button{height:30px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--ink);font:700 13px var(--body);cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+.forrow button i{width:9px;height:9px;border-radius:50%;}
 .chit{position:relative;background:#f6ecd9;color:#2a1300;border-radius:6px;padding:16px 18px 14px;transform:rotate(-1.2deg);box-shadow:0 8px 24px rgba(0,0,0,.4);display:flex;flex-direction:column;gap:4px;}
 .chit::before{content:"";position:absolute;inset:6px;border:1.5px dashed rgba(160,82,45,.5);border-radius:4px;pointer-events:none;}
 .chit .from{font:800 11px var(--body);letter-spacing:.14em;text-transform:uppercase;color:#a0522d;}
@@ -298,6 +315,24 @@ button.pill{cursor:pointer;}button.pill:hover{border-color:rgba(255,182,39,.55);
   </div>
 </div>
 
+<div class="agecard wide" id="profileCard" hidden role="dialog" aria-labelledby="profTitle">
+  <div>
+    <div class="eyebrow"><i></i>Before you enter</div>
+    <h2 id="profTitle">Aapka naam?</h2>
+    <p class="note">Everyone in the bazaar sees your name and your look.</p>
+    <div class="prof">
+      <canvas id="profView" width="300" height="400" aria-label="Preview of your avatar"></canvas>
+      <div class="prof-opts">
+        <div class="field"><label for="profName">Your name</label><input id="profName" maxlength="16" placeholder="e.g. Hassan" autocomplete="nickname" enterkeyhint="done"></div>
+        <div class="opt"><span class="opt-l">Outfit</span><div class="styles" id="profStyles"></div></div>
+        <div class="opt"><span class="opt-l">Colour</span><div class="swatches" id="profCols"></div></div>
+        <div class="opt"><span class="opt-l">Skin tone</span><div class="swatches" id="profSkins"></div></div>
+      </div>
+    </div>
+    <div class="row"><button class="btn solid" type="button" id="profGo" style="height:44px">Chalo, bazaar!</button></div>
+  </div>
+</div>
+
 <section class="sheet closed" id="help" aria-label="Controls" aria-hidden="true">
   <div class="sheet-in">
     <div class="sheet-head"><div><h2>Thoda ghoom lo</h2><p>The bazaar is yours to explore.</p></div><button class="x" type="button" data-close aria-label="Close">×</button></div>
@@ -306,6 +341,7 @@ button.pill{cursor:pointer;}button.pill:hover{border-color:rgba(255,182,39,.55);
       <dt>Drag the scene</dt><dd>Look around you</dd>
       <dt>Tap the ground or a stall</dt><dd>Walk there by yourself. Tap a far stall and you walk up and start talking</dd>
       <dt class="live">Enter or ✉ Chat</dt><dd class="live">Talk to everyone in the same bazaar or aangan. Messages also pop up above their heads</dd>
+      <dt class="live">Buying for</dt><dd class="live">With friends in the bazaar, pick their name at any stall and whatever you buy goes to them</dd>
       <dt>F or Eat</dt><dd>Take a bite of whatever food the shopkeeper handed you</dd>
       <dt>Space</dt><dd>Hop</dd>
       <dt>Double-click or L</dt><dd>Lock the mouse for free look. Esc releases it</dd>
@@ -324,7 +360,7 @@ button.pill{cursor:pointer;}button.pill:hover{border-color:rgba(255,182,39,.55);
 <section class="sheet closed" id="friends" aria-label="Your aangan" aria-hidden="true">
   <div class="sheet-in">
     <div class="sheet-head"><div><h2 id="friendsTitle">Your aangan</h2><p id="friendsSub">Friends in the same aangan walk the bazaar with you and see every cracker you burst.</p></div><button class="x" type="button" data-close aria-label="Close">×</button></div>
-    <div class="field"><label for="nick" id="nickLbl">Your name above your head</label><input id="nick" maxlength="16" placeholder="e.g. Hassan"></div>
+    <div class="row" style="align-items:flex-end"><div class="field"><label for="nick" id="nickLbl">Your name above your head</label><input id="nick" maxlength="16" placeholder="e.g. Hassan"></div><button class="btn" type="button" id="lookBtn" style="height:40px">Change avatar</button></div>
     <div class="sec" id="secRoom"><h4>You're in</h4>
       <div class="row" style="justify-content:space-between"><span class="code" id="roomCode">Open bazaar</span><button class="btn solid" type="button" id="newRoom">Start a private aangan</button></div>
       <div class="peers" id="peers"></div><p class="note" id="netNote">Connecting…</p></div>
@@ -824,6 +860,11 @@ function person(o={}){const g=new THREE.Group();const sc=o.kid?.62:(o.scale||ran
   const head=new THREE.Group();head.position.y=.8;torso.add(head);
   M(new THREE.SphereGeometry(.15,14,12),skinM,0,0,0,head);
   const hair=M(new THREE.SphereGeometry(.155,12,8,0,Math.PI*2,0,Math.PI*.55),hairM,0,.02,-.01,head);hair.rotation.x=-.25;
+  const accM=o.accent?lam(o.accent,{emissive:'#120a10'}):cloth;
+  if(o.hair==='long'){M(new THREE.CylinderGeometry(.14,.11,.3,10),hairM,0,-.13,-.06,head);const br=M(new THREE.CylinderGeometry(.03,.02,.36,6),hairM,0,-.4,-.19,head);br.rotation.x=.12;}
+  else if(o.hair==='bun')M(new THREE.SphereGeometry(.07,10,8),hairM,0,.04,-.15,head);
+  if(o.head==='safa'){const sf=M(new THREE.SphereGeometry(.172,14,10,0,Math.PI*2,0,Math.PI*.52),accM,0,.035,-.005,head);sf.scale.set(1,.95,1.05);M(new THREE.SphereGeometry(.045,8,6),accM,0,.12,.13,head);}
+  if(o.bindi)M(new THREE.SphereGeometry(.012,6,5),lam('#c4283d',{emissive:'#600'}),0,.07,.145,head);
   for(const ex of[-.05,.05])M(new THREE.SphereGeometry(.018,6,5),lam('#140c0c'),ex,.02,.135,head);
   M(new THREE.BoxGeometry(.03,.04,.03),skinM,0,-.02,.15,head);
   const arms=[];for(const sd of[1,-1]){const sh=new THREE.Group();sh.position.set(sd*.22,.56,0);torso.add(sh);
@@ -833,9 +874,25 @@ function person(o={}){const g=new THREE.Group();const sc=o.kid?.62:(o.scale||ran
   const legs=[];for(const sd of[1,-1]){const hp=new THREE.Group();hp.position.set(sd*.09,0,0);hips.add(hp);
     M(new THREE.CylinderGeometry(.072,.06,.43,8),pantM,0,-.215,0,hp);const kn=new THREE.Group();kn.position.y=-.43;hp.add(kn);
     M(new THREE.CylinderGeometry(.056,.046,.42,8),pantM,0,-.21,0,kn);M(new THREE.BoxGeometry(.095,.055,.2),lam('#3a2418'),0,-.44,.045,kn);legs.push({hp,kn});}
+  if(o.outfit==='lehenga'||o.outfit==='saree'){const r1=o.outfit==='saree'?.32:.42;const skM=lam(clothC,{emissive:'#120a10',side:THREE.DoubleSide});
+    M(new THREE.CylinderGeometry(.2,r1,.84,16,1,true),skM,0,-.44,0,hips);const bd=M(new THREE.TorusGeometry(r1,.022,6,24),accM,0,-.85,0,hips);bd.rotation.x=Math.PI/2;
+    if(o.outfit==='saree'){const pl=M(new THREE.BoxGeometry(.1,.72,.025),accM,0,.3,.2,torso);pl.rotation.z=.62;}
+    else{const d=M(new THREE.TorusGeometry(.2,.035,6,14,Math.PI),accM,0,.5,0,torso);d.rotation.set(.2,0,Math.PI);}}
+  else if(o.outfit==='sherwani'){M(new THREE.CylinderGeometry(.25,.3,.42,12),cloth,0,-.36,0,torso);for(let i=0;i<5;i++)M(new THREE.SphereGeometry(.016,6,5),accM,0,.56-i*.13,.2+i*.012,torso);}
+  else if(o.outfit==='kurta')M(new THREE.BoxGeometry(.04,.26,.02),accM,0,.48,.185,torso);
   if(!o.kid&&!o.plain&&Math.random()<.4){const d=new THREE.Mesh(new THREE.TorusGeometry(.2,.035,6,14,Math.PI),lam(pick(['#ffb627','#ff4f7e','#22c7b8'])));d.position.set(0,.5,0);d.rotation.set(.2,0,Math.PI);torso.add(d);}
   const sh=new THREE.Mesh(blobGeo,blobMat);sh.rotation.x=-Math.PI/2;sh.position.y=.012;g.add(sh);
   g.scale.setScalar(sc);g.userData.rig={hips,torso,head,arms,legs,ph:Math.random()*6};scene.add(g);return g;}
+/* player looks: [outfit, colour, skin] */
+const OUTFITS=[{id:'kurta',name:'Kurta'},{id:'sherwani',name:'Sherwani'},{id:'lehenga',name:'Lehenga'},{id:'saree',name:'Saree'}];
+const LOOKC=[['#e63946','#ffb627'],['#ff7a1a','#c4283d'],['#ffd23a','#d62e5c'],['#3fbf5a','#ffd23a'],['#13998d','#ff4f7e'],['#3b6fd1','#ffd23a'],['#8e44ad','#ffb627'],['#f3e6cf','#c4283d']];
+const LOOKN=['Laal','Kesari','Haldi','Hara','Mor-pankhi','Neela','Jamuni','Safed'];
+const validLook=v=>Array.isArray(v)&&v.length===3&&[OUTFITS.length,LOOKC.length,SKINS.length].every((n,i)=>Number.isInteger(v[i])&&v[i]>=0&&v[i]<n)?v.slice():null;
+function lookOpts(v){const o=OUTFITS[v[0]].id,c=LOOKC[v[1]];const base={col:c[0],accent:c[1],skin:SKINS[v[2]],plain:true,scale:1,outfit:o};
+  if(o==='kurta')return Object.assign(base,{pants:'#f3e6cf'});
+  if(o==='sherwani')return Object.assign(base,{pants:'#f3e6cf',head:'safa'});
+  return Object.assign(base,{pants:c[0],hair:o==='lehenga'?'long':'bun',bindi:true});}
+S.look=validLook(store.get('look',null));
 // one jointed walk/run/idle pose for every character
 function animRig(r,ph,amt,o={}){const s=Math.sin(ph),c=Math.cos(ph);const A=amt*(o.run?1.35:1);
   r.legs[0].hp.rotation.x=-s*.5*A;r.legs[1].hp.rotation.x=s*.5*A;
@@ -1193,7 +1250,7 @@ function renderBangles(){if(!rArm)return;const arms=[rArm,lArm];for(const a of a
   S.bangles.forEach((c,i)=>{const a=arms[i%2];const n=a.userData.bg.children.length;const b=new THREE.Mesh(new THREE.TorusGeometry(.039,.006,6,18),lam(c,{emissive:new THREE.Color(c).multiplyScalar(.35)}));b.position.z=-.055-n*.012;a.userData.bg.add(b);});}
 let ARMS,rArm,lArm,rHand,lHand,hand,tipObj,heldB,heldBall,BODY,heldSlot,incense,heldKey='~',armA=null;let handSp=null;
 function mkArm(col,side){const g=new THREE.Group();
-  const sleeve=new THREE.Mesh(new THREE.CylinderGeometry(.052,.064,.38,12),lam(col,{emissive:col.clone().multiplyScalar(.12)}));sleeve.rotation.x=Math.PI/2;sleeve.position.z=.14;g.add(sleeve);
+  const sleeve=new THREE.Mesh(new THREE.CylinderGeometry(.052,.064,.38,12),lam(col,{emissive:col.clone().multiplyScalar(.12)}));sleeve.rotation.x=Math.PI/2;sleeve.position.z=.14;g.add(sleeve);g.userData.sleeve=sleeve;
   const cuff=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,.04,12),lam('#f3e6cf'));cuff.rotation.x=Math.PI/2;cuff.position.z=-.045;g.add(cuff);
   const wrist=new THREE.Mesh(new THREE.CylinderGeometry(.033,.04,.07,10),skin);wrist.rotation.x=Math.PI/2;wrist.position.z=-.08;g.add(wrist);
   const kada=new THREE.Mesh(new THREE.TorusGeometry(.037,.006,6,16),lam('#c9a36a',{emissive:'#3a2a10'}));kada.position.z=-.07;g.add(kada);
@@ -1202,7 +1259,12 @@ function mkArm(col,side){const g=new THREE.Group();
   for(let i=0;i<4;i++){const f=new THREE.Mesh(new THREE.CylinderGeometry(.011,.012,.052,6),skin);f.rotation.x=Math.PI/2+.55;f.position.set(-.027+i*.018,-.014,-.05);h.add(f);}
   const th=new THREE.Mesh(new THREE.CylinderGeometry(.012,.013,.045,6),skin);th.rotation.set(Math.PI/2,0,.9*side);th.position.set(-.042*side,0,-.02);h.add(th);
   g.userData.hand=h;return g;}
-function buildFPP(){const col=new THREE.Color().setHSL(N.hue/360,.5,.45);
+const myArmCol=()=>S.look?new THREE.Color(LOOKC[S.look[1]][0]).multiplyScalar(.85):new THREE.Color().setHSL(N.hue/360,.5,.45);
+function applyLook(){if(!S.look)return;const hsl={};new THREE.Color(LOOKC[S.look[1]][0]).getHSL(hsl);N.hue=Math.round(hsl.h*360);store.set('hue',N.hue);
+  skin.color.set(SKINS[S.look[2]]);const ac=myArmCol();
+  if(rArm)for(const a of[rArm,lArm]){const m=a.userData.sleeve.material;m.color.copy(ac);m.emissive.copy(ac).multiplyScalar(.12);}
+  if(BODY&&BODY.userData.torso)BODY.userData.torso.material.color.copy(ac);pushPresence();}
+function buildFPP(){const col=myArmCol();
   ARMS=new THREE.Group();camera.add(ARMS);
   rArm=mkArm(col,1);lArm=mkArm(col,-1);ARMS.add(rArm,lArm);rHand=rArm.userData.hand;lHand=lArm.userData.hand;
   hand=new THREE.Group();rHand.add(hand);hand.rotation.x=-1.0;
@@ -1219,7 +1281,7 @@ function buildFPP(){const col=new THREE.Color().setHSL(N.hue/360,.5,.45);
   for(const a of[rArm,lArm]){const bg=new THREE.Group();a.add(bg);a.userData.bg=bg;}renderBangles();
   phirkiG=new THREE.Group();const pst=new THREE.Mesh(new THREE.CylinderGeometry(.004,.004,.34,4),lam('#c9a36a'));pst.position.y=.17;phirkiG.add(pst);phirkiW=pinwheel('#ff4f7e');phirkiW.scale.setScalar(1.3);phirkiW.position.set(0,.35,-.01);phirkiG.add(phirkiW);phirkiG.rotation.x=-.25;lHand.add(phirkiG);phirkiG.visible=false;
   BODY=new THREE.Group();scene.add(BODY);BODY.visible=false;
-  const torso=new THREE.Mesh(new THREE.CylinderGeometry(.18,.24,.62,12),lam(col));torso.position.set(0,1.1,.15);BODY.add(torso);
+  const torso=new THREE.Mesh(new THREE.CylinderGeometry(.18,.24,.62,12),lam(col));torso.position.set(0,1.1,.15);BODY.add(torso);BODY.userData.torso=torso;
   const pants=lam('#f3e6cf');BODY.userData.legs=[];
   for(const lx of[-.1,.1]){const leg=new THREE.Group();leg.position.set(lx,.82,.1);const thg=new THREE.Mesh(new THREE.CylinderGeometry(.075,.062,.78,8),pants);thg.position.y=-.39;leg.add(thg);
     const foot=new THREE.Mesh(new THREE.BoxGeometry(.1,.07,.25),lam('#5a3020'));foot.position.set(0,-.79,-.07);leg.add(foot);BODY.add(leg);BODY.userData.legs.push(leg);}
@@ -1274,12 +1336,12 @@ function updArms(dt,sp,ef){if(!ARMS)return;
 
 /* friends */
 const avatars={};
-function makeAvatar(h,name){const g=new THREE.Group();const col=new THREE.Color().setHSL(h/360,.65,.55);
-  const p=person({col:'#'+col.getHexString(),plain:true,scale:1});g.add(p);p.rotation.y=Math.PI;
+function makeAvatar(h,name,look){const g=new THREE.Group();const col=look?new THREE.Color(LOOKC[look[1]][0]):new THREE.Color().setHSL(h/360,.65,.55);
+  const p=person(look?lookOpts(look):{col:'#'+col.getHexString(),plain:true,scale:1});g.add(p);p.rotation.y=Math.PI;
   const lamp=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,blending:THREE.AdditiveBlending,depthWrite:false,color:col}));lamp.scale.set(.7,.7,1);lamp.position.set(0,1.0,0);g.add(lamp);
   const tag=textSprite(name||'Friend',{size:.32,col:'#'+col.getHexString()});tag.position.y=2.25;g.add(tag);
   const bal=new THREE.Mesh(new THREE.SphereGeometry(.17,12,10),basic('#ffffff'));bal.scale.y=1.2;bal.position.set(-.3,2.75,0);bal.visible=false;g.add(bal);
-  g.userData={name,bal,tag,rig:p.userData.rig,last:new V3(),ph:0};scene.add(g);return g;}
+  g.userData={name,lk:look?look.join(','):'',bal,tag,rig:p.userData.rig,last:new V3(),ph:0};scene.add(g);return g;}
 
 /* ================= voices ================= */
 const VO={on:false,voice:null,hi:false,ok:'speechSynthesis' in window&&typeof SpeechSynthesisUtterance!=='undefined'};
@@ -1325,12 +1387,13 @@ function focusOn(pos,look){CAM.fPos.copy(pos);dummy.position.copy(pos);dummy.loo
 function unfocus(){CAM.tF=0;}
 
 /* ================= dialog ================= */
-const DLG={s:null,list:null};
+const DLG={s:null,list:null,to:null};
+const GIFTABLE=new Set(['crackers','halwai','chaat','chai','bangle','toys','jalebi','kulfi','diya','bw']);
 function talk(s,line,o={}){if(!line)return;if(s){say(s,line[0]);if(DLG.s===s)setQuote(line);}
   const vol=s&&s.front?clamp(1.6/(1+Math.hypot(s.front.x-player.x,s.front.z-player.z)/4),.25,1):1;speak(line,{pitch:s?s.pitch:1,rate:.98,vol:o.vol??vol},o.then);}
 function setQuote(line){const q=$('#dlgQuote');q.textContent='"'+line[0]+'"';const hi=document.createElement('span');hi.className='hi';hi.textContent=line[1];q.appendChild(hi);}
 function openDialog(s){
-  if(GAME.on||CAM.ride)return;cancelGoto();unlockMouse();DLG.s=s;closeSheets();hideTip();
+  if(GAME.on||CAM.ride)return;cancelGoto();unlockMouse();DLG.s=s;DLG.to=null;closeSheets();hideTip();
   $('#dlgCat').textContent=s.cat;$('#dlgTitle').textContent=s.name;$('#dialog').hidden=false;$('#prompt').hidden=true;
   focusOn(s.dlgPos,s.dlgLook);
   const g=pick(s.greet);talk(s,g,{vol:1});setQuote(g);renderChoices();}
@@ -1338,46 +1401,51 @@ function closeDialog(){if(!DLG.s)return;DLG.s=null;DLG.list=null;$('#dialog').hi
 function choice(label,fn,o={}){return{label,fn,quiet:o.quiet,html:o.html};}
 function renderChoices(){
   const s=DLG.s;if(!s)return;const wrap=$('#dlgChoices');wrap.innerHTML='';let list=[];
+  const gp=GIFTABLE.has(s.type)?giftPeers():[];if(DLG.to&&!gp.some(p=>p.peer===DLG.to))DLG.to=null;const to=DLG.to;
+  if(gp.length){const row=document.createElement('div');row.className='forrow';row.innerHTML='<span class="fl">Buying for</span>';
+    const chip=(id,label,hue)=>{const b=document.createElement('button');b.type='button';b.setAttribute('aria-pressed',String(to===id));const i=document.createElement('i');i.style.background=`hsl(${hue},70%,58%)`;
+      b.append(i,document.createTextNode(label));b.onclick=()=>{DLG.to=id;renderChoices();};row.appendChild(b);};
+    chip(null,'You',N.hue);gp.forEach(p=>chip(p.peer,peerName(p),+p.presence.h||40));wrap.appendChild(row);}
   if(s.type==='crackers'){
-    for(const k of s.items){const it=ITEMS[k],pr=priceAt(k,s);list.push(choice('',()=>buy(k,s),{html:`Buy ${it.name} · ${pr<it.price?`<s>₹${it.price}</s> `:''}₹${pr} for ${it.pack}`}));}
+    for(const k of s.items){const it=ITEMS[k],pr=priceAt(k,s);list.push(choice('',()=>buy(k,s,to),{html:`Buy ${it.name} · ${pr<it.price?`<s>₹${it.price}</s> `:''}₹${pr} for ${it.pack}`}));}
     list.push(choice(s.disc>0?`${Math.round(s.disc*100)}% off agreed`:'Bhaiya, thoda kam karo',()=>bargain(s)));
   } else if(s.type==='halwai'){
-    list.push(choice('',()=>orderFood(s,'laddoo',15,L.laddoo),{html:'Ek laddoo · ₹15'}));
-    list.push(choice('',()=>orderFood(s,'katli',20,L.katli),{html:'Kaju katli · ₹20'}));
-    list.push(choice('Shagun milega?',()=>halwai(s)));
+    list.push(choice('',()=>orderFood(s,'laddoo',15,L.laddoo,to),{html:'Ek laddoo · ₹15'}));
+    list.push(choice('',()=>orderFood(s,'katli',20,L.katli,to),{html:'Kaju katli · ₹20'}));
+    if(!to)list.push(choice('Shagun milega?',()=>halwai(s)));
   } else if(s.type==='chaat'){
-    list.push(choice('',()=>orderFood(s,'golgappa',30,L.teekha),{html:'Teekha golgappe · ₹30'}));
-    list.push(choice('',()=>orderFood(s,'meetha',30,L.meetha),{html:'Khatta-meetha · ₹30'}));
-    list.push(choice('',()=>orderFood(s,'tikki',40,L.tikki),{html:'Aloo tikki · ₹40'}));
+    list.push(choice('',()=>orderFood(s,'golgappa',30,L.teekha,to),{html:'Teekha golgappe · ₹30'}));
+    list.push(choice('',()=>orderFood(s,'meetha',30,L.meetha,to),{html:'Khatta-meetha · ₹30'}));
+    list.push(choice('',()=>orderFood(s,'tikki',40,L.tikki,to),{html:'Aloo tikki · ₹40'}));
   } else if(s.type==='chai'){
-    list.push(choice('',()=>orderFood(s,'chai',10,L.cutting),{html:'Cutting chai · ₹10'}));
-    list.push(choice('',()=>orderFood(s,'adrak',15,L.adrak),{html:'Adrak wali, kadak · ₹15'}));
+    list.push(choice('',()=>orderFood(s,'chai',10,L.cutting,to),{html:'Cutting chai · ₹10'}));
+    list.push(choice('',()=>orderFood(s,'adrak',15,L.adrak,to),{html:'Adrak wali, kadak · ₹15'}));
   } else if(s.type==='ring'){
     list.push(choice('',()=>startGame(s),{html:'Play · ₹20 for 3 rings'}));
   } else if(s.type==='shoot'){
     list.push(choice('',()=>startGame(s),{html:'Play · ₹20 for 8 shots'}));
   } else if(s.type==='bangle'){
-    list.push(choice('',()=>buyBangle(s,'#e63946',15),{html:'Laal chudiyan · ₹15'}));
-    list.push(choice('',()=>buyBangle(s,'#3fbf5a',15),{html:'Hari chudiyan · ₹15'}));
-    list.push(choice('',()=>buyBangle(s,'#ffd23a',25),{html:'Sunehri kangan · ₹25'}));
+    list.push(choice('',()=>buyBangle(s,'#e63946',15,to),{html:'Laal chudiyan · ₹15'}));
+    list.push(choice('',()=>buyBangle(s,'#3fbf5a',15,to),{html:'Hari chudiyan · ₹15'}));
+    list.push(choice('',()=>buyBangle(s,'#ffd23a',25,to),{html:'Sunehri kangan · ₹25'}));
   } else if(s.type==='toys'){
-    list.push(choice('',()=>{if(S.phirki){talk(s,L.phirki);return;}if(S.coins<10){talk(s,L.broke);return;}armAct('reach');S.coins-=10;S.phirki=true;store.set('phirki',true);save();renderCoins();SND.coin();talk(s,L.phirki);toast('Your phirki spins faster when you run.');},{html:S.phirki?'Phirki (you have one)':'Phirki · ₹10'}));
-    list.push(choice('',()=>{if(S.coins<5){talk(s,L.broke);return;}S.coins-=5;save();renderCoins();for(let i=0;i<3;i++)tone(null,{f0:2400,f1:2900,dur:.16,gain:.08,type:'sine',when:i*.2,vib:30,vibD:120});talk(s,L.seeti);},{html:'Seeti · ₹5'}));
+    list.push(choice('',()=>buyPhirki(s,to),{html:S.phirki&&!to?'Phirki (you have one)':'Phirki · ₹10'}));
+    if(!to)list.push(choice('',()=>{if(S.coins<5){talk(s,L.broke);return;}S.coins-=5;save();renderCoins();for(let i=0;i<3;i++)tone(null,{f0:2400,f1:2900,dur:.16,gain:.08,type:'sine',when:i*.2,vib:30,vibD:120});talk(s,L.seeti);},{html:'Seeti · ₹5'}));
   } else if(s.type==='jalebi'){
-    list.push(choice('',()=>orderFood(s,'jalebi',25,L.jalebi),{html:'Garam jalebi · ₹25'}));
-    list.push(choice('',()=>orderFood(s,'rabdi',40,L.rabdi),{html:'Jalebi aur rabdi · ₹40'}));
+    list.push(choice('',()=>orderFood(s,'jalebi',25,L.jalebi,to),{html:'Garam jalebi · ₹25'}));
+    list.push(choice('',()=>orderFood(s,'rabdi',40,L.rabdi,to),{html:'Jalebi aur rabdi · ₹40'}));
   } else if(s.type==='kulfi'){
-    list.push(choice('',()=>orderFood(s,'kulfi',20,L.malai),{html:'Malai kulfi · ₹20'}));
-    list.push(choice('',()=>orderFood(s,'kesar',30,L.kesar),{html:'Kesar pista kulfi · ₹30'}));
+    list.push(choice('',()=>orderFood(s,'kulfi',20,L.malai,to),{html:'Malai kulfi · ₹20'}));
+    list.push(choice('',()=>orderFood(s,'kesar',30,L.kesar,to),{html:'Kesar pista kulfi · ₹30'}));
   } else if(s.type==='diya'){
-    list.push(choice('',()=>{buy('diya',s);talk(s,L.diyaBuy);},{html:'Mitti ka diya · ₹10'}));
-    list.push(choice('',()=>{buy('rangoli',s);talk(s,L.rangoliBuy);},{html:'Rangoli kit · ₹30'}));
+    list.push(choice('',()=>{buy('diya',s,to);talk(s,L.diyaBuy);},{html:'Mitti ka diya · ₹10'}));
+    list.push(choice('',()=>{buy('rangoli',s,to);talk(s,L.rangoliBuy);},{html:'Rangoli kit · ₹30'}));
   } else if(s.type==='spin'){
     list.push(choice('',()=>startGame(s),{html:'Ghumao · ₹20'}));
   } else if(s.type==='bw'){
-    list.push(choice('',()=>buyBalloon(s),{html:'Ek gubbara · ₹10'}));
+    list.push(choice('',()=>buyBalloon(s,to),{html:'Ek gubbara · ₹10'}));
     list.push(choice('Kitne ka hai?',()=>talk(s,L.balloonPrice)));
-    if(S.balloon)list.push(choice('Let my balloon go',()=>releaseBalloon()));
+    if(S.balloon&&!to)list.push(choice('Let my balloon go',()=>releaseBalloon()));
   }
   list.push(choice('Bas dekh raha hoon',()=>{talk(s,pick(L.browse));closeDialog();},{quiet:true}));
   list.forEach((c,i)=>{const b=document.createElement('button');b.type='button';b.className='choice'+(c.quiet?' quiet':'');
@@ -1388,7 +1456,10 @@ function steam(s,n){if(s.steam)for(let i=0;i<n;i++)setTimeout(()=>puff(s.steam.x
 
 /* shop actions */
 const priceAt=(k,s)=>Math.round(ITEMS[k].price*(1-((s&&s.disc)||0)));
-function buy(k,s){const it=ITEMS[k];const ag=ageOf(S.age);if(ag&&ag.lock.includes(k)){talk(s,tooYoung);toast(`${it.name} is only for older players. ${ag.from==='Mummy'?'Mummy':'Papa'} said so!`);return;}const pr=priceAt(k,s);if(S.coins<pr){toast(`Short by ₹${pr-S.coins}. Relight diyas or visit Mishra Halwai.`);talk(s,L.broke);return;}
+function buy(k,s,to){const it=ITEMS[k];const ag=ageOf(S.age);if(ag&&ag.lock.includes(k)){talk(s,tooYoung);toast(`${it.name} is only for older players. ${ag.from==='Mummy'?'Mummy':'Papa'} said so!`);return;}
+  if(to){const why=giftBlocked(to,k);if(why){talk(s,tooYoung);toast(why);return;}}
+  const pr=priceAt(k,s);if(S.coins<pr){toast(`Short by ₹${pr-S.coins}. Relight diyas or visit Mishra Halwai.`);talk(s,L.broke);return;}
+  if(to){if(!sendGift(to,'item',k))return;armAct('reach');S.coins-=pr;save();renderCoins();if(s)s.disc=0;talk(s,pick(L.thanks));return;}
   armAct('reach');S.coins-=pr;S.bag[k]=(S.bag[k]||0)+it.pack;S.sel=k;save();renderCoins();renderTray();SND.coin();
   toast(`Bought ${it.pack} × ${it.name} for ₹${pr}${pr<it.price?` (saved ₹${it.price-pr})`:''}.${it.decor?' Tap the ground anywhere to place it.':''}`);if(s)s.disc=0;talk(s,pick(L.thanks));}
 function bargain(s){
@@ -1404,15 +1475,22 @@ let halwaiT=0;
 function halwai(s){const now=performance.now();if(now-halwaiT<3000)return;halwaiT=now;
   if(S.coins<150){S.coins+=250;save();renderCoins();SND.win();talk(s,L.shagun);toast('Mishra uncle gave you a laddoo and ₹250 shagun.');}
   else talk(s,L.rich);}
-function buyBangle(s,col,price){if(S.coins<price){talk(s,L.broke);return;}if(S.bangles.length>=8)S.bangles.shift();armAct('reach');S.coins-=price;S.bangles.push(col);store.set('bangles',S.bangles);save();renderCoins();SND.clink(null);renderBangles();talk(s,pick(L.bangle));toast('Look at your wrists!');}
+function buyBangle(s,col,price,to){if(S.coins<price){talk(s,L.broke);return;}
+  if(to){if(!sendGift(to,'bangle',col))return;armAct('reach');S.coins-=price;save();renderCoins();SND.clink(null);talk(s,pick(L.bangle));return;}if(S.bangles.length>=8)S.bangles.shift();armAct('reach');S.coins-=price;S.bangles.push(col);store.set('bangles',S.bangles);save();renderCoins();SND.clink(null);renderBangles();talk(s,pick(L.bangle));toast('Look at your wrists!');}
 function relight(d){armAct('reach');d.lit=true;d.fl.visible=true;S.coins+=15;save();renderCoins();SND.coin();
   for(let i=0;i<16;i++)spark(d.x,.15,d.z,rand(-.8,.8),rand(.5,2),rand(-.8,.8),{life:.6,h:45,l:70,size:.05,g:3});toast('Diya relit. +₹15');}
 const BWS={name:'Balloon-wala',cat:'Gali ka gubbara',type:'bw',pitch:1.25,greet:[['Gubbare le lo, rang birange gubbare!','गुब्बारे ले लो, रंग बिरंगे गुब्बारे!']]};
 function openBW(){BWS.keeper=BW.g;BWS.front=BW.g.position;BWS.group=BW.g;
   const away=new V3(player.x-BW.x,0,player.z-BW.z);if(away.lengthSq()<.01)away.set(0,0,1);
   BWS.dlgPos=new V3(BW.x,1.75,BW.z).add(away.setLength(2.6));BWS.dlgLook=new V3(BW.x,2.1,BW.z);openDialog(BWS);}
-function buyBalloon(s){if(S.coins<10){talk(s,L.broke);return;}armAct('reach');S.coins-=10;save();renderCoins();SND.coin();
-  setBalloon(pick(['#ff4f7e','#ffb627','#22c7b8','#9b7bff','#ff7a1a','#4ade80']));talk(s,L.balloonBuy);toast('You are carrying a balloon. Friends can see it too.');}
+const BALLOONS=['#ff4f7e','#ffb627','#22c7b8','#9b7bff','#ff7a1a','#4ade80'];
+function buyBalloon(s,to){if(S.coins<10){talk(s,L.broke);return;}
+  if(to){if(!sendGift(to,'balloon',pick(BALLOONS)))return;armAct('reach');S.coins-=10;save();renderCoins();talk(s,L.balloonBuy);return;}
+  armAct('reach');S.coins-=10;save();renderCoins();SND.coin();
+  setBalloon(pick(BALLOONS));talk(s,L.balloonBuy);toast('You are carrying a balloon. Friends can see it too.');}
+function buyPhirki(s,to){if(!to&&S.phirki){talk(s,L.phirki);return;}if(S.coins<10){talk(s,L.broke);return;}
+  if(to){if(!sendGift(to,'phirki',1))return;}else{S.phirki=true;store.set('phirki',true);SND.coin();toast('Your phirki spins faster when you run.');}
+  armAct('reach');S.coins-=10;save();renderCoins();talk(s,L.phirki);}
 function releaseBalloon(){if(!S.balloon)return;const col=new THREE.Color(S.balloon);const p=heldBall.getWorldPosition(new V3());
   const m=new THREE.Mesh(new THREE.SphereGeometry(.13,12,10),basic('#'+col.getHexString()));m.scale.y=1.18;m.position.copy(p);scene.add(m);
   ENT.push({type:'float',obj:m,t:0,fuse:0,done:false});setBalloon(null);toast('Udd gaya! Your balloon floats off over the bazaar.');}
@@ -1442,9 +1520,10 @@ function kulfiModel(col){const g=new THREE.Group();const st=new THREE.Mesh(new T
   const k=new THREE.Mesh(new THREE.ConeGeometry(.022,.1,12),lam(col,{emissive:new THREE.Color(col).multiplyScalar(.15)}));k.rotation.x=Math.PI;k.position.y=.1;g.add(k);
   const nut=new THREE.Mesh(new THREE.SphereGeometry(.006,5,4),lam('#3fbf5a'));nut.position.set(.008,.14,.012);g.add(nut);g.userData.shrink=k;g.userData.kulfi=true;return g;}
 let foodSlot=null,biteA=null;
-function orderFood(s,id,price,line){
-  if(S.food){toast(`Finish your ${FOODS[S.food.id].name.toLowerCase()} first. Press F to eat.`);return;}
+function orderFood(s,id,price,line,to){
+  if(!to&&S.food){toast(`Finish your ${FOODS[S.food.id].name.toLowerCase()} first. Press F to eat.`);return;}
   if(s.handing>0)return;if(S.coins<price){talk(s,L.broke);toast(`${FOODS[id].name} costs ₹${price}.`);return;}
+  if(to){if(!sendGift(to,'food',id))return;S.coins-=price;save();renderCoins();talk(s,line);steam(s,6);return;}
   S.coins-=price;save();renderCoins();SND.coin();talk(s,line);steam(s,6);
   const m=FOODS[id].make();const h=s.keeper.userData.rig.arms[0].hand;m.position.set(0,-.05,.05);m.scale.setScalar(1.8);h.add(m);s.handing=1.3;
   setTimeout(()=>{h.remove(m);giveFood(id);if(DLG.s===s)closeDialog();},1300);}
@@ -1564,7 +1643,7 @@ $('#mapToggle').onclick=()=>{const w=$('#mapWrap');w.classList.toggle('min');$('
 
 /* ================= input ================= */
 const keys={};
-window.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;keys[e.code]=true;if(!S.started)return;
+window.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||!$('#profileCard').hidden)return;keys[e.code]=true;if(!S.started)return;
   const n=+e.key;
   if(n>=1&&n<=9){if(DLG.s&&DLG.list&&DLG.list[n-1]){DLG.list[n-1].fn();if(DLG.s)renderChoices();return;}if(!DLG.s&&!GAME.on&&n<=ORDER.length){S.sel=ORDER[n-1];renderTray();selHint();}}
   if((e.key==='Enter'||e.code==='KeyT')&&!e.repeat&&N.room){e.preventDefault();openChat(true);return;}
@@ -1583,7 +1662,7 @@ function interact(cx,cy){
   if(CAM.ride){if(S.sel==='phuljhadi')lightSparkler();return;}
   const h=hitAt(cx,cy);if(!h){if(S.sel==='phuljhadi'&&!DLG.s&&!handSp)lightSparkler();return;}
   const u=h.object.userData;const dist=Math.hypot(h.point.x-player.x,h.point.z-player.z);
-  if(u.buy){const s=u.stall;if(dist>4.6&&!DLG.s){walkTo(s.front.x,s.front.z,1.1,()=>openDialog(s),`Walking to ${s.name}…`);return;}buy(u.buy,s);if(DLG.s)renderChoices();return;}
+  if(u.buy){const s=u.stall;if(dist>4.6&&!DLG.s){walkTo(s.front.x,s.front.z,1.1,()=>openDialog(s),`Walking to ${s.name}…`);return;}buy(u.buy,s,DLG.s===s?DLG.to:null);if(DLG.s)renderChoices();return;}
   if(u.keeper||u.balloon){const s=u.keeper||u.balloon;if(dist>5.5&&!DLG.s){walkTo(s.front.x,s.front.z,1.1,()=>openDialog(s),`Walking to ${s.name}…`);return;}if(DLG.s!==s)openDialog(s);return;}
   if(u.bw){if(dist>4&&!DLG.s){const a=new V3(player.x-BW.x,0,player.z-BW.z);if(a.lengthSq()<.01)a.set(0,0,1);a.setLength(1.7);walkTo(BW.x+a.x,BW.z+a.z,.6,openBW,'Walking to the balloon-wala…');return;}if(DLG.s!==BWS)openBW();return;}
   if(u.dhol){if(dist>6){walkTo(DHOL.x-1.3,DHOL.z+1.3,.8,dholFast,'Walking to the dhol-wala…');return;}dholFast();return;}
@@ -1664,11 +1743,33 @@ $('#voiceBtn').onclick=()=>{if(!VO.ok){toast('This browser has no speech voices.
 $('#helpBtn').onclick=()=>{unlockMouse();openSheet('help');};
 $('#friendsBtn').onclick=()=>{audioInit();openSheet('friends');renderNet();};
 $('#heroInvite').onclick=()=>{audioInit();openSheet('friends');renderNet();};
-function enterBazaar(withSound){if(S.started)return;S.started=true;closeSheets();document.body.classList.remove('pre');const hero=$('#hero');hero.style.transition='opacity .8s';hero.style.opacity='0';setTimeout(()=>{hero.hidden=true;},800);
+function enterBazaar(withSound){if(S.started)return;S.started=true;pushPresence();closeSheets();document.body.classList.remove('pre');const hero=$('#hero');hero.style.transition='opacity .8s';hero.style.opacity='0';setTimeout(()=>{hero.hidden=true;},800);
   if(withSound){setSound(true);setVoice(true);setTimeout(()=>speak(L.welcome),900);}else audioInit();
   CAM.introT=0;{const a=ageOf(S.age);if(a)setTimeout(()=>toast(`₹${fmt(S.coins)} in your pocket from ${a.from==='Your own kamai'?'your own kamai':a.from}. Manage it well!`),1200);}
   setTimeout(()=>{if(!$('#toast').classList.contains('show'))toast(TOUCH?'Joystick to walk, drag to look, tap anywhere to walk there. Walk up to a stall and tap the prompt.':'WASD to walk, drag to look (double-click for mouse look). Tap anywhere to walk there.');},4400);}
 let pendingSound=true;
+/* name & avatar */
+const PV={r:null,scene:null,cam:null,model:null,raf:0,look:null};
+function profPreview(){if(!PV.r){try{PV.r=new THREE.WebGLRenderer({canvas:$('#profView'),alpha:true,antialias:true});}catch(e){return;}
+    PV.scene=new THREE.Scene();PV.scene.add(new THREE.HemisphereLight(0xfff0dd,0x40304a,1.1));const d=new THREE.DirectionalLight(0xffd9a0,.8);d.position.set(1.5,2,2);PV.scene.add(d);
+    PV.cam=new THREE.PerspectiveCamera(32,.75,.1,20);PV.cam.position.set(0,1.05,4.3);PV.cam.lookAt(0,.95,0);}
+  if(PV.model){PV.scene.remove(PV.model);PV.model.traverse(m=>{if(m.geometry&&m.geometry!==blobGeo)m.geometry.dispose();});}
+  PV.model=person(lookOpts(PV.look));PV.scene.add(PV.model);
+  if(!PV.raf){const t0=performance.now();const loop=now=>{if($('#profileCard').hidden){PV.raf=0;return;}PV.raf=requestAnimationFrame(loop);
+      PV.model.rotation.y=Math.sin((now-t0)/1400)*.7;animRig(PV.model.userData.rig,0,0);PV.r.render(PV.scene,PV.cam);};PV.raf=requestAnimationFrame(loop);}}
+function renderProf(){const v=PV.look;const st=$('#profStyles');st.innerHTML='';
+  OUTFITS.forEach((o,i)=>{const b=document.createElement('button');b.type='button';b.textContent=o.name;b.setAttribute('aria-pressed',String(v[0]===i));b.onclick=()=>{v[0]=i;renderProf();profPreview();};st.appendChild(b);});
+  const sw=(sel,bgs,names,idx)=>{const w=$(sel);w.innerHTML='';bgs.forEach((bg,i)=>{const b=document.createElement('button');b.type='button';b.style.background=bg;b.title=names[i];b.setAttribute('aria-label',names[i]);
+    b.setAttribute('aria-pressed',String(v[idx]===i));b.onclick=()=>{v[idx]=i;renderProf();profPreview();};w.appendChild(b);});};
+  sw('#profCols',LOOKC.map(c=>`linear-gradient(135deg,${c[0]} 62%,${c[1]} 62%)`),LOOKN,1);sw('#profSkins',SKINS,SKINS.map((_,i)=>`Skin tone ${i+1}`),2);}
+function showProfile(){unlockMouse();PV.look=(S.look||[0,(Math.random()*LOOKC.length)|0,0]).slice();$('#profName').value=S.nick||'';
+  $('#profileCard').hidden=false;renderProf();profPreview();if(!TOUCH)setTimeout(()=>$('#profName').focus(),50);}
+$('#profGo').onclick=()=>{const n=$('#profName').value.replace(/[^\p{L}\p{N} ._-]/gu,'').trim().slice(0,16);
+  if(!n){toast('Apna naam likho! Type your name first.');$('#profName').focus();return;}
+  S.nick=n;store.set('nick',n);nickEl.value=n;S.look=PV.look.slice();store.set('look',S.look);$('#profileCard').hidden=true;applyLook();renderInvite();
+  if(!S.started)tryEnter(pendingSound);else toast(`Looking good, ${n}!`);};
+$('#profName').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('#profGo').click();}});
+$('#lookBtn').onclick=()=>{closeSheets();showProfile();};
 function showAgeCard(){$('#ageCard').hidden=false;$('#ageAsk').hidden=false;$('#ageNote').hidden=true;const w=$('#ages');w.innerHTML='';
   AGES.forEach(a=>{const b=document.createElement('button');b.type='button';b.innerHTML=`${a.label}<small>${a.sub} · ₹${fmt(a.amt)}</small>`;b.onclick=()=>pickAge(a);w.appendChild(b);});}
 function pickAge(a){audioInit();S.age=a.id;store.set('age',a.id);S.coins=a.amt;S.warn={};store.set('warn',S.warn);save();renderCoins();
@@ -1678,7 +1779,7 @@ function pickAge(a){audioInit();S.age=a.id;store.set('age',a.id);S.coins=a.amt;S
 $('#noteGo').onclick=()=>{$('#ageCard').hidden=true;if(!S.started)enterBazaar(pendingSound);else toast(`Fresh purse: ₹${fmt(S.coins)}.`);};
 $('#noteBack').onclick=()=>{$('#ageAsk').hidden=false;$('#ageNote').hidden=true;};
 $('#ageReset').onclick=()=>{closeSheets();showAgeCard();};
-function tryEnter(withSound){pendingSound=withSound;if(!S.age){audioInit();showAgeCard();return;}enterBazaar(withSound);}
+function tryEnter(withSound){pendingSound=withSound;if(!S.nick||!S.look){audioInit();showProfile();return;}if(!S.age){audioInit();showAgeCard();return;}enterBazaar(withSound);}
 $('#enterBtn').onclick=()=>tryEnter(true);$('#enterQuiet').onclick=()=>tryEnter(false);
 
 /* photo */
@@ -1739,14 +1840,14 @@ function crowdStart(){if(!A.ctx||CROWD.g)return;try{const s=A.ctx.createBufferSo
 function crowdTick(){if(!CROWD.g)return;const inLane=Math.hypot(player.x-C.x,player.z-C.z)>RING.maid-1&&!CAM.ride;CROWD.g.gain.setTargetAtTime(S.sound?(inLane?.045:.015):0,A.ctx.currentTime,.5);}
 
 /* ================= network ================= */
-const N={room:null,ch:null,name:'',seq:store.get('seq',0)|0,shots:[],seen:{},hue:store.get('hue',Math.round(rand(0,360))),err:'',lastPos:0,lp:[0,0,0]};
+const N={room:null,ch:null,name:'',seq:store.get('seq',0)|0,shots:[],seen:{},gifts:[],gseen:{},gseq:store.get('gseq',0)|0,hue:store.get('hue',Math.round(rand(0,360))),err:'',lastPos:0,lp:[0,0,0]};
 store.set('hue',N.hue);
 const nickEl=$('#nick');nickEl.value=S.nick;
 nickEl.addEventListener('input',()=>{S.nick=nickEl.value.replace(/[^\p{L}\p{N} ._-]/gu,'').slice(0,16);store.set('nick',S.nick);pushPresence();renderInvite();});
 const r2=v=>Math.round(v*100)/100;
 function share(k,x,z,yaw){if(!N.ch)return;N.seq++;store.set('seq',N.seq);N.shots.push({i:N.seq,k,x:r2(x),z:r2(z),w:r2(yaw)});if(N.shots.length>6)N.shots.shift();pushPresence();}
-function pushPresence(){if(!N.ch)return;const p=[r2(player.x),r2(player.z),r2(player.yaw)];
-  N.ch.presence({n:S.nick||'',h:N.hue,p,s:N.shots,b:S.balloon||null,c:CHAT.mine}).catch(()=>{});N.lp=p;N.lastPos=performance.now();}
+function pushPresence(){if(!N.ch||!S.started)return;const p=[r2(player.x),r2(player.z),r2(player.yaw)];
+  N.ch.presence({n:S.nick||'',h:N.hue,p,s:N.shots,b:S.balloon||null,c:CHAT.mine,v:S.look||null,a:S.age||null,g:N.gifts}).catch(()=>{});N.lp=p;N.lastPos=performance.now();}
 function netTick(){if(!N.ch)return;const now=performance.now();if(now-N.lastPos<220)return;
   if(Math.abs(N.lp[0]-player.x)>.15||Math.abs(N.lp[1]-player.z)>.15||Math.abs(N.lp[2]-player.yaw)>.12||now-N.lastPos>5000)pushPresence();}
 function peerName(p){return (p.presence&&typeof p.presence.n==='string'&&p.presence.n.trim())?p.presence.n.trim().slice(0,16):'Friend';}
@@ -1755,9 +1856,9 @@ function onPeers(ch){
     for(const p of chg.left){const a=avatars[p.peer];if(a){scene.remove(a.g);delete avatars[p.peer];}if(!p.sameTab)sysMsg(`${peerName(p)} left the bazaar.`);delete CHAT.seen[p.peer];}
     for(const p of chg.joined){if(!p.sameTab)sysMsg(`${peerName(p)} is in the bazaar.`);}
     for(const p of chg.joined.concat(chg.updated)){
-      if(p.sameTab)continue;const pr=p.presence||{};
-      if(Array.isArray(pr.p)&&pr.p.length===3){let a=avatars[p.peer];const nm=peerName(p);
-        if(!a||a.g.userData.name!==nm){if(a)scene.remove(a.g);a=avatars[p.peer]={g:makeAvatar(+pr.h||40,nm),tx:0,tz:0,ty:0,sp:0};a.g.position.set(+pr.p[0]||0,0,+pr.p[1]||0);}
+      if(p.sameTab)continue;const pr=p.presence||{};if(!Array.isArray(pr.p))continue;
+      if(pr.p.length===3){let a=avatars[p.peer];const nm=peerName(p);const lk=validLook(pr.v),lks=lk?lk.join(','):'';
+        if(!a||a.g.userData.name!==nm||a.g.userData.lk!==lks){if(a)scene.remove(a.g);a=avatars[p.peer]={g:makeAvatar(+pr.h||40,nm,lk),tx:0,tz:0,ty:0,sp:0};a.g.position.set(+pr.p[0]||0,0,+pr.p[1]||0);}
         a.tx=clamp(+pr.p[0]||0,-40,40);a.tz=clamp(+pr.p[1]||0,-90,20);a.ty=+pr.p[2]||0;
         const bal=a.g.userData.bal;if(typeof pr.b==='string'&&/^#[0-9a-f]{6}$/i.test(pr.b)){bal.visible=true;bal.material.color.set(pr.b).multiplyScalar(1.6);}else bal.visible=false;}
       readChat(p,pr);
@@ -1765,14 +1866,41 @@ function onPeers(ch){
       for(const s of shots){if(!s||typeof s.i!=='number'||!ITEMS[s.k])continue;if(first){mx=Math.max(mx,s.i);continue;}if(s.i<=(N.seen[p.peer]||0))continue;mx=Math.max(mx,s.i);
         const dec=ITEMS[s.k].decor;let x=clamp(+s.x||0,-40,40),z=clamp(+s.z||0,-75,12);if(!dec){const ox=x-C.x,oz=z-C.z,rr=Math.hypot(ox,oz)||1;if(rr>RING.maid){x=C.x+ox/rr*RING.maid;z=C.z+oz/rr*RING.maid;}}
         if(dec)placeDecor(s.k,x,z);else if(s.k==='phuljhadi'){const a=avatars[p.peer];if(a)a.sp=10;}else place(s.k,x,z,{remote:true,yaw:+s.w||0});}
-      N.seen[p.peer]=mx;}
+      N.seen[p.peer]=mx;readGifts(p,pr);}
     renderNet();},e=>{N.err=e.code;renderNet();});}
+/* gifts: anyone can buy anything for anyone in the same bazaar */
+const BANGLES={'#e63946':'laal chudiyan','#3fbf5a':'hari chudiyan','#ffd23a':'a sunehri kangan'};
+function myPeer(){const me=N.ch?N.ch.peers().find(p=>p.sameTab):null;return me?me.peer:null;}
+function giftPeers(){return N.ch?N.ch.peers().filter(p=>!p.sameTab&&p.presence&&Array.isArray(p.presence.p)):[];}
+function peerById(id){return giftPeers().find(p=>p.peer===id)||null;}
+function giftLabel(k,x){if(k==='item')return ITEMS[x]?`${ITEMS[x].pack} × ${ITEMS[x].name}`:'';if(k==='food')return FOODS[x]?FOODS[x].name.toLowerCase():'';
+  if(k==='bangle')return BANGLES[x]||'';if(k==='balloon')return 'a balloon';if(k==='phirki')return 'a phirki';return '';}
+function giftBlocked(to,k){const p=peerById(to);const ag=p&&ageOf(p.presence.a);return ag&&ag.lock.includes(k)?`${peerName(p)} is too young for ${ITEMS[k].name}.`:'';}
+function giftSparkle(x,z){for(let i=0;i<40;i++){const an=Math.random()*Math.PI*2,u=rand(-1,1),r=Math.sqrt(1-u*u),sp=rand(1,2.6);
+  spark(x,1.6,z,r*Math.cos(an)*sp,u*sp+1,r*Math.sin(an)*sp,{life:rand(.4,.9),h:rand(35,50),s:90,l:70,size:.05,g:2,drag:.94,flick:.4});}}
+function sendGift(to,k,x){const p=peerById(to);if(!p){toast('They have left the bazaar.');return false;}
+  N.gseq++;store.set('gseq',N.gseq);N.gifts.push({i:N.gseq,to,k,x});if(N.gifts.length>6)N.gifts.shift();pushPresence();
+  const nm=peerName(p),lb=giftLabel(k,x);sysMsg(`You gifted ${nm} ${lb}.`);toast(`Sent ${lb} to ${nm}. Happy Diwali!`);SND.win();
+  const a=avatars[to];if(a)giftSparkle(a.g.position.x,a.g.position.z);return true;}
+function recvGift(p,gf){const from=peerName(p),k=gf.k,x=gf.x,lb=giftLabel(k,x);if(!lb)return;
+  if(gf.to!==myPeer()){const t=peerById(gf.to);if(t){sysMsg(`${from} gifted ${peerName(t)} ${lb}.`);const a=avatars[gf.to];if(a)giftSparkle(a.g.position.x,a.g.position.z);}return;}
+  let tail='';
+  if(k==='item'){const ag=ageOf(S.age);if(ag&&ag.lock.includes(x))return;S.bag[x]=(S.bag[x]||0)+ITEMS[x].pack;save();if(!S.sel)S.sel=x;renderTray();tail=ITEMS[x].decor?' Tap the ground to place it.':' Light it in the maidan.';}
+  else if(k==='food'){const give=()=>{if(biteA){setTimeout(give,300);return;}if(S.food)foodSlot.remove(S.food.obj);giveFood(x);};give();tail=` Press F${TOUCH?' or tap Eat':''} to eat.`;}
+  else if(k==='bangle'){if(S.bangles.length>=8)S.bangles.shift();S.bangles.push(x);store.set('bangles',S.bangles);renderBangles();tail=' Look at your wrists!';}
+  else if(k==='balloon'){if(typeof x!=='string'||!/^#[0-9a-f]{6}$/i.test(x))return;setBalloon(x);}
+  else if(k==='phirki'){S.phirki=true;store.set('phirki',true);}
+  sysMsg(`${from} gifted you ${lb}.`);SND.win();setTimeout(()=>toast(`${from} gifted you ${lb}!${tail}`),60);
+  const a=avatars[p.peer];if(a)avatarSay(a,'Happy Diwali! Yeh aapke liye.');}
+function readGifts(p,pr){const list=Array.isArray(pr.g)?pr.g:[];const first=!(p.peer in N.gseen);let mx=N.gseen[p.peer]||0;
+  for(const gf of list){if(!gf||typeof gf.i!=='number')continue;if(first||gf.i<=mx){mx=Math.max(mx,gf.i);continue;}mx=gf.i;recvGift(p,gf);}
+  N.gseen[p.peer]=mx;}
 let unsub=null;
 function clearAvatars(){for(const k in avatars){scene.remove(avatars[k].g);delete avatars[k];}}
 async function enterRoom(name){if(!N.room)return;
   try{if(unsub){unsub();unsub=null;}clearAvatars();
     if(N.ch&&N.ch!==N.room&&N.ch.leave)await N.ch.leave().catch(()=>{});else if(N.ch===N.room)N.room.presence({s:null,p:null}).catch(()=>{});
-    N.seen={};N.shots=[];CHAT.seen={};CHAT.mine=[];if(name)sysMsg(`You joined aangan ${name}.`);N.ch=name?await N.room.join(name):N.room;N.name=name||'';unsub=onPeers(N.ch);pushPresence();N.err='';}
+    N.seen={};N.shots=[];N.gifts=[];N.gseen={};CHAT.seen={};CHAT.mine=[];if(name)sysMsg(`You joined aangan ${name}.`);N.ch=name?await N.room.join(name):N.room;N.name=name||'';unsub=onPeers(N.ch);pushPresence();N.err='';}
   catch(e){N.err=(e&&e.code)||'error';N.ch=N.room;N.name='';unsub=onPeers(N.room);pushPresence();toast('Could not join that aangan. Check the code and try again.');}
   renderNet();renderInvite();}
 function renderNet(){const live=!!N.room;$('#chatBtn').hidden=!live;if(!live&&CHAT.open)closeChat();$('#secRoom').hidden=!live;$('#secJoin').hidden=!live;
@@ -1957,7 +2085,7 @@ async function boot(){
   buildGround();buildGate();buildEntry();STALLS.forEach(buildStall);buildDiyas();buildPlaza();buildPools();buildCity();buildKandils();buildPeople();buildBalloonWala();buildDhol();buildWheel();
   bulbs.count=bulbData.length;for(let i=0;i<bulbData.length;i++)bulbs.setColorAt(i,_c.setHSL(bulbData[i].h/360,1,.55));scene.add(bulbs);
   marigold.count=mgN;scene.add(marigold);flags.count=flN;scene.add(flags);
-  IA=interactables();buildFPP();
+  IA=interactables();buildFPP();applyLook();
   resize();renderCoins();S.sel=ORDER.find(k=>S.bag[k]>0)||null;renderTray();renderInvite();
   burst(-6,20,-12,{kind:'peony',hue:42});burst(8,26,-22,{kind:'ring',hue:330});burst(1,18,-6,{kind:'willow'});
   last=performance.now();requestAnimationFrame(frame);
