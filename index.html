@@ -8,13 +8,17 @@
 <meta property="og:title" content="Phatake Bazaar · Patakhe lene chaloge mere saath?">
 <meta property="og:description" content="A 3D Diwali mela in your browser. Sixteen stalls, a giant wheel and a whole sky to burst.">
 <meta property="og:type" content="website">
-<meta name="twitter:card" content="summary">
+<meta property="og:url" content="https://diwali-patakha-bazaar.vercel.app/">
+<meta property="og:image" content="https://diwali-patakha-bazaar.vercel.app/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A glowing Diwali bazaar at night with fireworks over a giant wheel">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://diwali-patakha-bazaar.vercel.app/og.jpg">
+<link rel="canonical" href="https://diwali-patakha-bazaar.vercel.app/">
+<title>Phatake Bazaar · A 3D Diwali mela in your browser</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M10 38 Q32 56 54 38 Z' fill='%23b5562c'/%3E%3Cellipse cx='32' cy='38' rx='22' ry='5' fill='%23d9733f'/%3E%3Cpath d='M35 34 Q31 20 38 12 Q44 24 35 34Z' fill='%23ffc94d'/%3E%3C/svg%3E">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);}*{box-sizing:border-box;}body{margin:0;font:14px system-ui,sans-serif;}img{max-width:100%;}[hidden]{display:none!important;}</style>
-</head>
-<body>
-<title>Phatake Bazaar</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Mukta:wght@400;600;800&family=Tiro+Devanagari+Hindi&display=swap">
@@ -185,7 +189,7 @@ button.pill{cursor:pointer;}button.pill:hover{border-color:rgba(255,182,39,.55);
 .peer{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);font-size:13px;}
 .peer i{width:9px;height:9px;border-radius:50%;}
 .note{font-size:13px;color:var(--muted);line-height:1.45;margin:0;max-width:65ch;}
-.invite{width:100%;min-height:64px;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--ink);padding:10px;font:14px/1.4 var(--body);resize:none;}
+.invite{width:100%;min-height:88px;field-sizing:content;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--ink);padding:10px;font:14px/1.4 var(--body);resize:none;}
 .sec{display:flex;flex-direction:column;gap:8px;padding:14px;border:1px solid var(--line);border-radius:14px;}
 .sec h4{margin:0;font:800 12px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
 .keys{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;align-items:center;font-size:14px;margin:0;}
@@ -207,6 +211,9 @@ button.pill{cursor:pointer;}button.pill:hover{border-color:rgba(255,182,39,.55);
 }
 @media (prefers-reduced-motion:reduce){.sheet,.toast{transition:none;}.dialog{animation:none;}}
 </style>
+</head>
+<body>
+<noscript><p class="err">Phatake Bazaar needs JavaScript to light up. Please turn it on and reload.</p></noscript>
 
 <canvas id="c" aria-label="A 3D Diwali bazaar at night. Walk to stalls, talk to shopkeepers, play games, ride the giant wheel and burst crackers in the maidan."></canvas>
 
@@ -298,7 +305,7 @@ button.pill{cursor:pointer;}button.pill:hover{border-color:rgba(255,182,39,.55);
       <dt>W A S D / arrows</dt><dd>Walk through the bazaar</dd>
       <dt>Drag the scene</dt><dd>Look around you</dd>
       <dt>Tap the ground or a stall</dt><dd>Walk there by yourself. Tap a far stall and you walk up and start talking</dd>
-      <dt>Enter or ✉ Chat</dt><dd>Talk to everyone in the same bazaar or aangan. Messages also pop up above their heads</dd>
+      <dt class="live">Enter or ✉ Chat</dt><dd class="live">Talk to everyone in the same bazaar or aangan. Messages also pop up above their heads</dd>
       <dt>F or Eat</dt><dd>Take a bite of whatever food the shopkeeper handed you</dd>
       <dt>Space</dt><dd>Hop</dd>
       <dt>Double-click or L</dt><dd>Lock the mouse for free look. Esc releases it</dd>
@@ -316,14 +323,14 @@ button.pill{cursor:pointer;}button.pill:hover{border-color:rgba(255,182,39,.55);
 
 <section class="sheet closed" id="friends" aria-label="Your aangan" aria-hidden="true">
   <div class="sheet-in">
-    <div class="sheet-head"><div><h2>Your aangan</h2><p>Friends in the same aangan walk the bazaar with you and see every cracker you burst.</p></div><button class="x" type="button" data-close aria-label="Close">×</button></div>
-    <div class="field"><label for="nick">Your name above your head</label><input id="nick" maxlength="16" placeholder="e.g. Hassan"></div>
-    <div class="sec"><h4>You're in</h4>
+    <div class="sheet-head"><div><h2 id="friendsTitle">Your aangan</h2><p id="friendsSub">Friends in the same aangan walk the bazaar with you and see every cracker you burst.</p></div><button class="x" type="button" data-close aria-label="Close">×</button></div>
+    <div class="field"><label for="nick" id="nickLbl">Your name above your head</label><input id="nick" maxlength="16" placeholder="e.g. Hassan"></div>
+    <div class="sec" id="secRoom"><h4>You're in</h4>
       <div class="row" style="justify-content:space-between"><span class="code" id="roomCode">Open bazaar</span><button class="btn solid" type="button" id="newRoom">Start a private aangan</button></div>
       <div class="peers" id="peers"></div><p class="note" id="netNote">Connecting…</p></div>
     <div class="sec"><h4>Invite message</h4><textarea class="invite" id="invite" readonly></textarea>
-      <div class="row"><button class="btn" type="button" id="copyInvite">Copy invite</button><span class="note" id="copyNote"></span></div></div>
-    <div class="sec"><h4>Join a friend</h4>
+      <div class="row"><button class="btn solid" type="button" id="shareInvite" hidden>Share</button><button class="btn" type="button" id="copyInvite">Copy invite</button><span class="note" id="copyNote"></span></div></div>
+    <div class="sec" id="secJoin"><h4>Join a friend</h4>
       <div class="row"><div class="field"><label for="joinCode">Their aangan code</label><input id="joinCode" placeholder="diya-4821" autocapitalize="none" spellcheck="false"></div>
         <button class="btn" type="button" id="joinBtn" style="align-self:flex-end;height:40px">Join</button><button class="btn" type="button" id="leaveBtn" style="align-self:flex-end;height:40px">Back to open bazaar</button></div></div>
   </div>
@@ -336,6 +343,7 @@ button.pill{cursor:pointer;}button.pill:hover{border-color:rgba(255,182,39,.55);
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="net.js"></script>
 <script>
 (()=>{
 "use strict";
@@ -477,6 +485,8 @@ const cv=$('#c');
 let renderer;
 try{renderer=new THREE.WebGLRenderer({canvas:cv,antialias:!TOUCH,powerPreference:'high-performance',preserveDrawingBuffer:true});}
 catch(e){document.body.insertAdjacentHTML('beforeend','<p class="err">This browser could not start 3D graphics.</p>');return;}
+cv.addEventListener('webglcontextlost',e=>{e.preventDefault();if(!$('#glLost'))document.body.insertAdjacentHTML('beforeend','<p class="err" id="glLost">The 3D view paused because the graphics card reset. <button class="btn solid" type="button" onclick="location.reload()">Reload the bazaar</button></p>');});
+cv.addEventListener('webglcontextrestored',()=>{const m=$('#glLost');if(m)m.remove();});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,TOUCH?1.35:1.75));
 const scene=new THREE.Scene();
 scene.background=new THREE.Color('#07061a');
@@ -1557,7 +1567,7 @@ const keys={};
 window.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;keys[e.code]=true;if(!S.started)return;
   const n=+e.key;
   if(n>=1&&n<=9){if(DLG.s&&DLG.list&&DLG.list[n-1]){DLG.list[n-1].fn();if(DLG.s)renderChoices();return;}if(!DLG.s&&!GAME.on&&n<=ORDER.length){S.sel=ORDER[n-1];renderTray();selHint();}}
-  if((e.key==='Enter'||e.code==='KeyT')&&!e.repeat){e.preventDefault();openChat(true);return;}
+  if((e.key==='Enter'||e.code==='KeyT')&&!e.repeat&&N.room){e.preventDefault();openChat(true);return;}
   if(e.code==='KeyF'&&!e.repeat){eat();}
   if(e.code==='Space'){e.preventDefault();jumpReq=true;}
   if(e.code==='KeyL'&&!e.repeat){if(LOCK)unlockMouse();else lockMouse();}
@@ -1648,6 +1658,7 @@ if(TOUCH){const j=$('#joy'),kn=$('#knob');j.hidden=false;$('#runBtn').hidden=fal
 /* ================= sound & voice toggles ================= */
 function setSound(on){audioInit();if(A.ctx&&A.ctx.state==='suspended')A.ctx.resume();S.sound=!!on&&!!A.ctx;if(S.sound)crowdStart();$('#soundLbl').textContent=S.sound?'Sound on':'Sound off';$('#soundBtn').setAttribute('aria-pressed',String(S.sound));}
 function setVoice(on){VO.on=!!on&&VO.ok;if(!VO.on&&VO.ok)try{speechSynthesis.cancel();}catch(e){}$('#voiceLbl').textContent=VO.on?'Voices on':'Voices off';$('#voiceBtn').setAttribute('aria-pressed',String(VO.on));}
+document.addEventListener('visibilitychange',()=>{if(!A.ctx)return;if(document.hidden){A.ctx.suspend().catch(()=>{});if(VO.ok)try{speechSynthesis.cancel();}catch(e){}}else if(S.sound)A.ctx.resume().catch(()=>{});});
 $('#soundBtn').onclick=()=>setSound(!S.sound);
 $('#voiceBtn').onclick=()=>{if(!VO.ok){toast('This browser has no speech voices.');return;}setVoice(!VO.on);if(VO.on)speak(L.welcome);};
 $('#helpBtn').onclick=()=>{unlockMouse();openSheet('help');};
@@ -1678,6 +1689,8 @@ $('#photoBtn').onclick=async()=>{
     g.fillStyle='#f6ecd9';g.font=`600 ${20*s}px Mukta, sans-serif`;g.fillText(`Shubh Deepawali 2026${S.nick?' · '+S.nick:''}`,28*s,h-12*s);
     const blob=await new Promise(r=>c.toBlob(r,'image/png'));
     const dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null;
+    if(!dl&&blob&&TOUCH&&navigator.canShare){const f=new File([blob],'phatake-bazaar-diwali.png',{type:'image/png'});
+      if(navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Phatake Bazaar',text:`Shubh Deepawali from Phatake Bazaar! ${siteUrl()}`});toast('Photo shared. Happy Diwali!');return;}catch(e){if(e&&e.name==='AbortError')return;}}}
     if(!dl&&blob){const u=URL.createObjectURL(blob);const an=document.createElement('a');an.href=u;an.download='phatake-bazaar-diwali.png';document.body.appendChild(an);an.click();an.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast('Photo saved. Share it with the family group!');return;}
     if(!dl||!blob){toast('Could not save the photo here.');return;}
     await dl.save({filename:'phatake-bazaar-diwali.png',data:blob});toast('Photo saved. Share it with the family group!');
@@ -1762,7 +1775,11 @@ async function enterRoom(name){if(!N.room)return;
     N.seen={};N.shots=[];CHAT.seen={};CHAT.mine=[];if(name)sysMsg(`You joined aangan ${name}.`);N.ch=name?await N.room.join(name):N.room;N.name=name||'';unsub=onPeers(N.ch);pushPresence();N.err='';}
   catch(e){N.err=(e&&e.code)||'error';N.ch=N.room;N.name='';unsub=onPeers(N.room);pushPresence();toast('Could not join that aangan. Check the code and try again.');}
   renderNet();renderInvite();}
-function renderNet(){if(CHAT.open)renderChatWho();const peers=N.ch?N.ch.peers():[];const others=peers.filter(p=>!p.sameTab);
+function renderNet(){const live=!!N.room;$('#chatBtn').hidden=!live;if(!live&&CHAT.open)closeChat();$('#secRoom').hidden=!live;$('#secJoin').hidden=!live;
+  document.querySelectorAll('#help .live').forEach(el=>el.hidden=!live);
+  $('#friendsTitle').textContent=live?'Your aangan':'Invite friends';$('#nickLbl').textContent=live?'Your name above your head':'Your name on your photos';
+  $('#friendsSub').textContent=live?'Friends in the same aangan walk the bazaar with you and see every cracker you burst.':'Send the bazaar to your family group. Your name goes on the photos you take.';
+  if(CHAT.open)renderChatWho();const peers=N.ch?N.ch.peers():[];const others=peers.filter(p=>!p.sameTab);
   $('#roomCode').textContent=N.name||'Open bazaar';$('#leaveBtn').hidden=!N.name;
   const dot=$('#netdot');if(!N.room){dot.style.background='#6b6380';$('#friendsLbl').textContent='Invite friends';}
   else{dot.style.background=others.length?'#4ade80':'#ffb627';$('#friendsLbl').textContent=others.length?`${others.length+1} in the bazaar`:'Invite friends';}
@@ -1773,9 +1790,13 @@ function renderNet(){if(CHAT.open)renderChatWho();const peers=N.ch?N.ch.peers():
   if(!N.room)note.textContent=N.err?'Live multiplayer is coming soon to this site. For now you can shop, eat and burst on your own.':'Connecting…';
   else if(!others.length)note.textContent=N.name?'Nobody else here yet. Send the invite and start shopping.':'Everyone with this page open walks the same bazaar. Start a private aangan to play with just your friends.';
   else note.textContent=`You can see ${others.length===1?'your friend':'your friends'} walking around, and every cracker they light bursts in your maidan too.`;}
-function renderInvite(){const who=S.nick?`${S.nick} here! `:'';const c=N.name;
-  $('#invite').value=c?`${who}Happy Diwali! Meet me at Phatake Bazaar. Open the link, tap "Invite friends" and join aangan ${c}. Let's shop, ride the giant wheel and burst crackers together.`
-    :`${who}Happy Diwali! Meet me at Phatake Bazaar. Open the link and find me at the stalls, then let's burst crackers in the maidan.`;}
+function siteUrl(){return /^https?:$/.test(location.protocol)?location.origin+location.pathname:'https://diwali-patakha-bazaar.vercel.app/';}
+function inviteParts(){const who=S.nick?`${S.nick} here! `:'';const c=N.name;
+  if(c)return{text:`${who}Happy Diwali! Meet me at Phatake Bazaar in aangan ${c}. Open this link to walk straight in, then let's shop, ride the giant wheel and burst crackers together.`,url:siteUrl()+'#'+c};
+  if(N.room)return{text:`${who}Happy Diwali! Meet me at Phatake Bazaar. Open the link and find me at the stalls, then let's burst crackers in the maidan.`,url:siteUrl()};
+  return{text:`${who}Happy Diwali! Come walk Phatake Bazaar, a 3D Diwali mela in your browser. Shop at the stalls, ride the giant wheel and burst a whole sky of crackers.`,url:siteUrl()};}
+function renderInvite(){const v=inviteParts();$('#invite').value=`${v.text} ${v.url}`;}
+if(navigator.share){const sb=$('#shareInvite');sb.hidden=false;sb.onclick=()=>{const v=inviteParts();navigator.share({title:'Phatake Bazaar',text:v.text,url:v.url}).catch(()=>{});};}
 $('#newRoom').onclick=()=>{const c='diya-'+Math.floor(1000+Math.random()*9000);enterRoom(c);toast(`Private aangan ${c} is open. Share the code.`);};
 $('#joinBtn').onclick=()=>{const v=$('#joinCode').value.trim().toLowerCase().replace(/\s+/g,'-');if(!/^[a-z0-9][a-z0-9_.-]{0,47}$/.test(v)){toast('Codes look like diya-4821.');return;}enterRoom(v);toast(`Joined ${v}.`);};
 $('#leaveBtn').onclick=()=>enterRoom('');
