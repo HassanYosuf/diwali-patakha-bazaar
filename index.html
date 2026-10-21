@@ -252,6 +252,7 @@ button.pill{cursor:pointer;}button.pill:hover{border-color:rgba(255,182,39,.55);
   <div class="brandsm"><b>Phatake Bazaar</b><span class="loc"><i></i><span id="locTxt">Bazaar gate</span></span></div>
   <div class="pills">
     <span class="pill coins" id="purse" title="Your purse"><span class="r">₹</span><span id="coins">1,000</span></span>
+    <button class="pill coins" id="refillBtn" type="button" title="Get a fresh purse" hidden>↻ <span class="lbl">Refill</span></button>
     <span class="pill aqi" title="Air quality around you"><span class="dot" id="aqidot"></span><span class="l">AQI</span> <b id="aqiv">48</b></span>
     <button class="pill" id="soundBtn" type="button" aria-pressed="false" title="Sound">♫ <span class="lbl" id="soundLbl">Sound off</span></button>
     <button class="pill" id="voiceBtn" type="button" aria-pressed="false" title="Shopkeeper voices">◔ <span class="lbl" id="voiceLbl">Voices off</span></button>
@@ -312,6 +313,15 @@ button.pill{cursor:pointer;}button.pill:hover{border-color:rgba(255,182,39,.55);
     <div class="chit"><span class="from" id="noteFrom"></span><span class="amt" id="noteAmt"></span><p class="say" id="noteSay"></p><p class="hi" id="noteHi"></p></div>
     <p class="note" id="noteRule"></p>
     <div class="row"><button class="btn solid" type="button" id="noteGo" style="height:44px">Chalo, bazaar!</button><button class="btn" type="button" id="noteBack" style="height:44px">Change age</button></div>
+  </div>
+</div>
+
+<div class="agecard" id="roomCard" hidden role="dialog" aria-labelledby="roomTitle">
+  <div>
+    <div class="eyebrow"><i></i>Welcome back</div>
+    <h2 id="roomTitle">Wapas aangan mein?</h2>
+    <p class="note">Last time you were in aangan <b id="roomPrev"></b>. Go back to the same friends, or start fresh.</p>
+    <div class="row"><button class="btn solid" type="button" id="roomCont" style="height:44px">Continue</button><button class="btn" type="button" id="roomNew" style="height:44px">Start a new aangan</button><button class="btn" type="button" id="roomOpen" style="height:44px">Open bazaar</button></div>
   </div>
 </div>
 
@@ -513,7 +523,7 @@ const tooYoung=['Ye bade logon ke liye hai, beta! Kuch aur lo.','ये बड�
 const ageOf=id=>AGES.find(a=>a.id===id)||null;
 
 /* ================= state ================= */
-const S={age:store.get('age',null),warn:store.get('warn',{}),coins:store.get('coins',2000),food:null,bag:store.get('bag',{phuljhadi:2}),sel:null,nick:store.get('nick',''),sound:false,balloon:null,bangles:store.get('bangles',[]),phirki:store.get('phirki',false),started:false,run:false};
+const S={age:store.get('age',null),warn:store.get('warn',{}),coins:store.get('coins',2000),base:store.get('base',0),food:null,bag:store.get('bag',{phuljhadi:2}),sel:null,nick:store.get('nick',''),sound:false,balloon:null,bangles:store.get('bangles',[]),phirki:store.get('phirki',false),started:false,run:false};
 const save=()=>{store.set('coins',S.coins);store.set('bag',S.bag);};
 if(!store.get('p2k',false)){S.coins=Math.max(S.coins,2000);S.warn={};store.set('warn',{});store.set('p2k',true);save();}
 
@@ -1520,12 +1530,13 @@ function say(s,text){if(!s||!s.keeper)return;if(s.bubble){s.keeper.remove(s.bubb
 /* ================= UI basics ================= */
 let toastT=0;
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2800);}
-function renderCoins(){$('#coins').textContent=fmt(S.coins);const a=ageOf(S.age);if(!a||!S.started)return;
-  $('#purse').title=`Pocket money from ${a.from}`;const r=S.coins/a.amt;let k=null;
+function renderCoins(){$('#coins').textContent=fmt(S.coins);const a=ageOf(S.age);$('#refillBtn').hidden=!a||!S.started||S.coins>=10;if(!a||!S.started)return;
+  $('#refillBtn').title=`Refill ₹${fmt(nextRefill(a))} (half of the last purse)`;
+  $('#purse').title=`Pocket money from ${a.from}`;const r=S.coins/(S.base||a.amt);let k=null;
   if(S.coins<=0&&!S.warn.zero)k='zero';else if(r<=.2&&S.coins>0&&!S.warn.low)k='low';else if(r<=.5&&r>.2&&!S.warn.half)k='half';
   if(r>.6){S.warn.half=S.warn.low=S.warn.zero=false;}
   if(k){S.warn[k]=true;if(k==='zero'){S.warn.low=S.warn.half=true;}if(k==='low')S.warn.half=true;store.set('warn',S.warn);const line=NOTES[k][a.id];
-    setTimeout(()=>{toast(`${a.from==='Your own kamai'?'Note to self':'Note from '+a.from}: "${line[0]}"`);speak(line,{pitch:a.id==='adult'?1:.95,rate:1});},1400);}
+    setTimeout(()=>{toast(`${a.from==='Your own kamai'?'Note to self':'Note from '+a.from}: "${line[0]}"${k==='zero'?' Tap ↻ Refill for a fresh purse.':''}`);speak(line,{pitch:a.id==='adult'?1:.95,rate:1});},1400);}
   store.set('warn',S.warn);}
 function renderTray(){const t=$('#tray');t.innerHTML='';
   ORDER.forEach((k,i)=>{const n=S.bag[k]||0;const b=document.createElement('button');b.type='button';b.className='slot'+(n?'':' empty');
@@ -1959,14 +1970,18 @@ $('#profName').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefau
 $('#lookBtn').onclick=()=>{closeSheets();showProfile();};
 function showAgeCard(){$('#ageCard').hidden=false;$('#ageAsk').hidden=false;$('#ageNote').hidden=true;const w=$('#ages');w.innerHTML='';
   AGES.forEach(a=>{const b=document.createElement('button');b.type='button';b.innerHTML=`${a.label}<small>${a.sub} · ₹${fmt(a.amt)}</small>`;b.onclick=()=>pickAge(a);w.appendChild(b);});}
-function pickAge(a){audioInit();S.age=a.id;store.set('age',a.id);S.coins=a.amt;S.warn={};store.set('warn',S.warn);save();renderCoins();
+function pickAge(a){audioInit();S.age=a.id;store.set('age',a.id);S.coins=S.base=a.amt;store.set('base',S.base);S.warn={};store.set('warn',S.warn);save();renderCoins();
   $('#ageAsk').hidden=true;$('#ageNote').hidden=false;$('#noteFrom').textContent=a.from==='Your own kamai'?'Your own kamai':`From ${a.from}, with love`;$('#noteAmt').textContent='₹'+fmt(a.amt);
   $('#noteSay').textContent=a.line[0];$('#noteHi').textContent=a.line[1];$('#noteRule').textContent=a.rule;SND.coin();
   if(pendingSound){const was=VO.on;VO.on=VO.ok;speak(a.line,{pitch:a.id==='kid'?1.1:.95});VO.on=was;}}
 $('#noteGo').onclick=()=>{$('#ageCard').hidden=true;if(!S.started)enterBazaar(pendingSound);else toast(`Fresh purse: ₹${fmt(S.coins)}.`);};
 $('#noteBack').onclick=()=>{$('#ageAsk').hidden=false;$('#ageNote').hidden=true;};
 $('#ageReset').onclick=()=>{closeSheets();showAgeCard();};
-function tryEnter(withSound){pendingSound=withSound;if(!S.nick||!S.look){audioInit();showProfile();return;}if(!S.age){audioInit();showAgeCard();return;}enterBazaar(withSound);}
+// each refill is half the previous purse, never below ₹50
+function nextRefill(a){return Math.max(50,Math.round((S.base||a.amt)/2));}
+$('#refillBtn').onclick=()=>{const a=ageOf(S.age);if(!a)return;S.base=nextRefill(a);store.set('base',S.base);S.coins+=S.base;S.warn={};store.set('warn',S.warn);save();renderCoins();SND.coin();
+  toast(`Refill: ₹${fmt(S.base)} from ${a.from==='Your own kamai'?'your own kamai':a.from}. The next one is half that.`);};
+function tryEnter(withSound){if(!$('#roomCard').hidden)return;pendingSound=withSound;if(!S.nick||!S.look){audioInit();showProfile();return;}if(!S.age){audioInit();showAgeCard();return;}enterBazaar(withSound);}
 $('#enterBtn').onclick=()=>tryEnter(true);$('#enterQuiet').onclick=()=>tryEnter(false);
 
 /* photo */
@@ -2091,7 +2106,17 @@ async function enterRoom(name){if(!N.room)return;
     if(N.ch&&N.ch!==N.room&&N.ch.leave)await N.ch.leave().catch(()=>{});else if(N.ch===N.room)N.room.presence({s:null,p:null}).catch(()=>{});
     N.seen={};N.shots=[];N.gifts=[];N.gseen={};N.rideSeen={};CHAT.seen={};CHAT.mine=[];if(name)sysMsg(`You joined aangan ${name}.`);N.ch=name?await N.room.join(name):N.room;N.name=name||'';unsub=onPeers(N.ch);pushPresence();N.err='';}
   catch(e){N.err=(e&&e.code)||'error';N.ch=N.room;N.name='';unsub=onPeers(N.room);pushPresence();toast('Could not join that aangan. Check the code and try again.');}
+  // keep the aangan in the URL so a reload or a shared link lands in the same place
+  store.set('room',N.name);try{history.replaceState(null,'',N.name?'#'+N.name:location.pathname+location.search);}catch(e){}
   renderNet();renderInvite();}
+const ROOM_RE=/^[a-z0-9][a-z0-9_.-]{0,47}$/;
+const newRoomCode=()=>'diya-'+Math.floor(1000+Math.random()*9000);
+function wantRoom(c){N.want=c;if(N.room)enterRoom(c);}
+function askRoom(prev){$('#roomPrev').textContent=prev;$('#roomCont').textContent=`Continue in ${prev}`;$('#roomCard').hidden=false;
+  const done=c=>{$('#roomCard').hidden=true;wantRoom(c);};
+  $('#roomCont').onclick=()=>done(prev);
+  $('#roomNew').onclick=()=>{const c=newRoomCode();done(c);toast(`Private aangan ${c} is open. Share the code.`);};
+  $('#roomOpen').onclick=()=>done('');}
 function renderNet(){const live=!!N.room;$('#chatBtn').hidden=!live;if(!live&&CHAT.open)closeChat();$('#secRoom').hidden=!live;$('#secJoin').hidden=!live;
   document.querySelectorAll('#help .live').forEach(el=>el.hidden=!live);
   $('#friendsTitle').textContent=live?'Your aangan':'Invite friends';$('#nickLbl').textContent=live?'Your name above your head':'Your name on your photos';
@@ -2114,8 +2139,8 @@ function inviteParts(){const who=S.nick?`${S.nick} here! `:'';const c=N.name;
   return{text:`${who}Happy Diwali! Come walk Phatake Bazaar, a 3D Diwali mela in your browser. Shop at the stalls, ride the giant wheel and burst a whole sky of crackers.`,url:siteUrl()};}
 function renderInvite(){const v=inviteParts();$('#invite').value=`${v.text} ${v.url}`;}
 if(navigator.share){const sb=$('#shareInvite');sb.hidden=false;sb.onclick=()=>{const v=inviteParts();navigator.share({title:'Phatake Bazaar',text:v.text,url:v.url}).catch(()=>{});};}
-$('#newRoom').onclick=()=>{const c='diya-'+Math.floor(1000+Math.random()*9000);enterRoom(c);toast(`Private aangan ${c} is open. Share the code.`);};
-$('#joinBtn').onclick=()=>{const v=$('#joinCode').value.trim().toLowerCase().replace(/\s+/g,'-');if(!/^[a-z0-9][a-z0-9_.-]{0,47}$/.test(v)){toast('Codes look like diya-4821.');return;}enterRoom(v);toast(`Joined ${v}.`);};
+$('#newRoom').onclick=()=>{const c=newRoomCode();enterRoom(c);toast(`Private aangan ${c} is open. Share the code.`);};
+$('#joinBtn').onclick=()=>{const v=$('#joinCode').value.trim().toLowerCase().replace(/\s+/g,'-');if(!ROOM_RE.test(v)){toast('Codes look like diya-4821.');return;}enterRoom(v);toast(`Joined ${v}.`);};
 $('#leaveBtn').onclick=()=>enterRoom('');
 $('#copyInvite').onclick=()=>{const ta=$('#invite');try{navigator.clipboard.writeText(ta.value).then(()=>{$('#copyNote').textContent='Copied. Paste it in your WhatsApp group.';},()=>{ta.select();$('#copyNote').textContent='Selected. Press copy on your keyboard.';});}catch(e){ta.select();}};
 
@@ -2296,8 +2321,11 @@ async function boot(){
   resize();renderCoins();S.sel=ORDER.find(k=>S.bag[k]>0)||null;renderTray();renderInvite();
   burst(-6,20,-12,{kind:'peony',hue:42});burst(8,26,-22,{kind:'ring',hue:330});burst(1,18,-6,{kind:'willow'});
   last=performance.now();requestAnimationFrame(frame);
-  if(window.claude&&window.claude.use){window.claude.use('room').then(r=>{if(!r){N.err='none';renderNet();return;}N.room=r;
-    const h=(location.hash||'').slice(1).toLowerCase();enterRoom(/^[a-z0-9][a-z0-9_.-]{0,47}$/.test(h)?h:'');}).catch(()=>{N.err='none';renderNet();});}
+  // a link with #code goes straight in; a plain visit after an aangan asks first (N.want stays null until answered)
+  const h=(location.hash||'').slice(1).toLowerCase(),prev=store.get('room','');N.want=ROOM_RE.test(h)?h:'';
+  if(window.claude&&window.claude.use){if(!N.want&&ROOM_RE.test(prev)){N.want=null;askRoom(prev);}
+    window.claude.use('room').then(r=>{if(!r){N.err='none';renderNet();return;}N.room=r;
+    if(N.want!==null)enterRoom(N.want);}).catch(()=>{N.err='none';renderNet();});}
   else{N.err='none';renderNet();}
 }
 boot();
