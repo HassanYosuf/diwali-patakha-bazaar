@@ -228,6 +228,10 @@ button.pill{cursor:pointer;}button.pill:hover{border-color:rgba(255,182,39,.55);
 }
 @media (prefers-reduced-motion:reduce){.sheet,.toast{transition:none;}.dialog{animation:none;}}
 </style>
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
 <noscript><p class="err">Phatake Bazaar needs JavaScript to light up. Please turn it on and reload.</p></noscript>
@@ -1596,7 +1600,7 @@ function renderChoices(){
   } else if(s.type==='ring'){
     list.push(choice('',()=>startGame(s),{html:'Play · ₹20 for 3 rings'}));
   } else if(s.type==='shoot'){
-    list.push(choice('',()=>startGame(s),{html:'Play · ₹20 for 8 shots'}));
+    list.push(choice('',()=>startGame(s),{html:'Play · ���20 for 8 shots'}));
   } else if(s.type==='bangle'){
     list.push(choice('',()=>buyBangle(s,'#e63946',15,to),{html:'Laal chudiyan · ₹15'}));
     list.push(choice('',()=>buyBangle(s,'#3fbf5a',15,to),{html:'Hari chudiyan · ₹15'}));
