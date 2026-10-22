@@ -27,12 +27,15 @@ function fetchAdsDefault(){const SB=root.SB;if(!SB||!SB.url)return Promise.rejec
 function start(onData,opts={}){
   const storage=opts.storage||webStore('localStorage'),session=opts.session||webStore('sessionStorage');
   const rnd=opts.rnd||Math.random,fetchAds=opts.fetchAds||fetchAdsDefault,timeoutMs=opts.timeoutMs||4000;
-  let saved=readJSON(session,PICKS_KEY,{})||{},shown=null;
-  const show=data=>{const st=choose(data,saved,rnd);saved=st.saved;writeJSON(session,PICKS_KEY,saved);
+  let saved=readJSON(session,PICKS_KEY,{})||{},shown=null,last=null,forced=null;
+  const show=data=>{last=data;const st=choose(data,saved,rnd);saved=st.saved;writeJSON(session,PICKS_KEY,saved);
+    // an admin preview sits on its slot even when the slot is off or the campaign isn't live yet
+    if(forced){const {kind,...c}=forced;st.slots[c.slot_id]={kind,campaign:c};}
     const key=JSON.stringify(st.slots);if(key===shown)return;shown=key;onData({slots:st.slots});};
   const cached=readJSON(storage,ADS_KEY,null);
   const usable=d=>d&&Array.isArray(d.slots)&&Array.isArray(d.campaigns);
   if(usable(cached))show(cached);
+  if(opts.fetchPreview)Promise.resolve().then(opts.fetchPreview).then(pc=>{if(pc&&pc.slot_id){forced=pc;show(last||{slots:[],campaigns:[]});}}).catch(()=>{});
   let timer;
   const late=new Promise((_,rej)=>{timer=setTimeout(()=>rej(new Error('timeout')),timeoutMs);});
   Promise.race([Promise.resolve().then(fetchAds),late]).then(data=>{clearTimeout(timer);if(!usable(data))throw new Error('bad data');
@@ -40,6 +43,37 @@ function start(onData,opts={}){
     .catch(()=>{clearTimeout(timer);if(shown===null){shown='null';onData(null);}});
 }
 
-const BRANDS={pick,choose,start};
+/* views and clicks: once per campaign per visit, sent to the track function every 30s and when the page is left.
+   Nothing is counted during an admin preview. */
+const MAX_BATCH=50,FLUSH_MS=30000;
+function create(env){
+  const previewId=new URLSearchParams(env.search||'').get('preview'),previewing=!!(previewId&&env.token);
+  let visit=null;try{visit=env.session&&env.session.getItem('pb_visit');}catch(e){}
+  if(!visit||visit.length<8||visit.length>40){visit=Math.random().toString(36).slice(2,10)+Date.now().toString(36);try{env.session.setItem('pb_visit',visit);}catch(e){}}
+  const q=[],done=new Set();
+  const queue=(id,t)=>{if(previewing||!id||done.has(t+id))return;done.add(t+id);q.push({c:id,t});};
+  const flush=all=>{do{if(!q.length)return;const events=q.splice(0,MAX_BATCH);
+    try{env.beacon(env.url,new Blob([JSON.stringify({visit,events})],{type:'text/plain'}));}catch(e){}}while(all);};
+  env.setInterval(()=>flush(false),FLUSH_MS);
+  env.onPageHide(()=>flush(true));
+  const T={visit,previewing,
+    seen:id=>queue(id,'v'),clicked:id=>queue(id,'c'),
+    open(c){if(!c||typeof c.link!=='string'||!/^https:\/\//.test(c.link))return false;T.clicked(c.id);env.openWin(c.link);return true;},
+    flush:()=>flush(true),
+    start:(onData,opts={})=>start(onData,Object.assign({},opts,{fetchPreview:previewing?()=>env.fetchPreview(previewId,env.token):null}))};
+  return T;}
+
+// the browser wiring: real storage, sendBeacon, and the admin's Supabase session for previews
+function browserEnv(){const SB=root.SB||{},ref=(()=>{try{return new URL(SB.url).hostname.split('.')[0];}catch(e){return '';}})();
+  let token=null;try{const s=JSON.parse(root.localStorage.getItem('sb-'+ref+'-auth-token')||'null');token=s&&s.access_token||null;}catch(e){}
+  return {session:webStore('sessionStorage'),url:(SB.url||'')+'/functions/v1/track',search:root.location?root.location.search:'',token,
+    beacon:(u,b)=>root.navigator.sendBeacon(u,b),setInterval:(f,ms)=>root.setInterval(f,ms),
+    onPageHide:f=>root.addEventListener('pagehide',f),openWin:u=>root.open(u,'_blank','noopener'),
+    fetchPreview:(id,tok)=>fetch(SB.url+'/rest/v1/campaigns?id=eq.'+encodeURIComponent(id)+'&select=id,brand,slot_id,link,art,lines,share,slots(kind)',
+        {headers:{apikey:SB.key,Authorization:'Bearer '+tok}}).then(r=>r.ok?r.json():[])
+      .then(rows=>{const c=rows[0];if(!c||!c.slots)return null;const {slots,...rest}=c;return Object.assign(rest,{kind:slots.kind});})};}
+
+const BRANDS={pick,choose,start,create};
+if(typeof module==='undefined'&&root.document)Object.assign(BRANDS,create(browserEnv()));
 if(typeof module!=='undefined'&&module.exports)module.exports=BRANDS;else root.BRANDS=BRANDS;
 })(typeof window!=='undefined'?window:globalThis);
