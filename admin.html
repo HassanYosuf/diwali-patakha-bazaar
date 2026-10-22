@@ -44,6 +44,22 @@ input[type=checkbox]{width:auto}
 .switch input{appearance:none;-webkit-appearance:none;width:42px;height:24px;border-radius:999px;background:#3a2d5c;border:none;padding:0;position:relative;cursor:pointer;transition:background .15s}
 .switch input::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .15s}
 .switch input:checked{background:var(--ok)}.switch input:checked::after{transform:translateX(18px)}
+.list{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.crow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px;border-radius:12px;background:var(--card);border:1px solid var(--line)}
+.crow .grow{flex:1;min-width:140px}
+.st{font-size:12px;font-weight:800;padding:2px 8px;border-radius:999px;background:#3a2d5c}
+.st.Live{background:var(--ok);color:#06210f}.st.Scheduled{background:var(--accent);color:#1a0f2e}
+.editor{margin-top:14px}
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:10px}
+.fields>div,.art>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.art{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:12px}
+.prev{max-width:100%;max-height:140px;border-radius:8px;object-fit:contain;background:#2a1a4a}
+.err{color:var(--bad);font-weight:700;min-height:0}
+.ok{color:var(--ok);font-weight:700}
+.lines{display:flex;flex-direction:column;gap:8px}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:6px;padding:8px;border-radius:10px;background:var(--card2)}
+fieldset{border:1px solid var(--line);border-radius:12px;padding:10px;margin:0;min-width:0}
+legend{padding:0 6px;color:var(--muted);font-size:13px}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);max-width:calc(100% - 32px);padding:10px 16px;border-radius:12px;background:#2c1f52;border:1px solid var(--line);z-index:9}
 </style>
 </head>
@@ -138,6 +154,109 @@ function renderSlots(){const g=$('#slotGrid');g.replaceChildren();const day=toda
       !s.enabled?el('p',{class:'muted'},'Off: nothing is drawn here.'):!live.length?el('p',{class:'muted'},'Showing Diwali art'):null,
       s.enabled?live.map(c=>el('div',{class:'live'},thumb(c),el('span',{},c.brand),el('span',{class:'share'},Math.round(c.share/tot*100)+'%'))):null,
       next?el('p',{class:'muted'},`Next: ${next.brand} from ${next.starts_on}`):null));}}
+
+/* campaigns: a list, and an editor that checks artwork before anything is uploaded */
+const TYPES={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'};
+const SHAPE={wide:{r:16/9,label:'16:9'},tall:{r:9/16,label:'9:16'}};
+const EXAMPLE={hoarding:{wide:'1920×1080'},premium_stall:{wide:'1600×900',tall:'1080×1920'},basic_stall:{wide:'1600×900',tall:'1080×1920'}};
+// null when the file can go up as this slot kind's part, otherwise what is wrong with it
+function checkArt(file,kind,part){
+  if(!TYPES[file.type])return Promise.resolve('Use a JPG, PNG or WebP image.');
+  if(file.size>1048576)return Promise.resolve(`This file is ${(file.size/1048576).toFixed(1)} MB; the limit is 1 MB.`);
+  return new Promise(res=>{const u=URL.createObjectURL(file),im=new Image();
+    im.onload=()=>{URL.revokeObjectURL(u);const r=im.naturalWidth/im.naturalHeight,want=SHAPE[part];
+      res(Math.abs(r/want.r-1)<=.02?null:`This image is ${im.naturalWidth}×${im.naturalHeight}; it should be ${want.label}, for example ${(EXAMPLE[kind]||EXAMPLE.hoarding)[part]||'1080×1920'}.`);};
+    im.onerror=()=>{URL.revokeObjectURL(u);res("This file couldn't be read as an image.");};im.src=u;});}
+// our tracking tags, unless the brand already tagged the link
+function withUtm(link,slotId){let u;try{u=new URL(link);}catch(e){return link;}
+  if([...u.searchParams.keys()].some(k=>k.startsWith('utm_')))return link;
+  u.searchParams.set('utm_source','phatake-bazaar');u.searchParams.set('utm_medium','game');u.searchParams.set('utm_campaign',slotId);return u.toString();}
+const slotOf=id=>D.slots.find(s=>s.id===id)||{};
+const statusOf=(c,day=todayIST())=>!c.enabled?'Off':c.ends_on<day?'Ended':c.starts_on>day?'Scheduled':'Live';
+let E=null;// the campaign in the editor
+function renderCampaigns(){const p=$('#campaigns');
+  if(!$('#cList'))p.replaceChildren(el('div',{class:'row spread'},el('h2',{},'Campaigns'),el('button',{class:'btn solid',type:'button',onclick:()=>openEditor(null)},'New campaign')),
+    el('div',{id:'editor',class:'editor'}),el('div',{id:'cList',class:'list'}));
+  const order={Live:0,Scheduled:1,Off:2,Ended:3},day=todayIST();
+  const list=[...D.campaigns].sort((a,b)=>order[statusOf(a,day)]-order[statusOf(b,day)]||a.starts_on.localeCompare(b.starts_on));
+  $('#cList').replaceChildren(...(list.length?list.map(c=>{const st=statusOf(c,day);return el('div',{class:'crow'},thumb(c),
+      el('div',{class:'grow'},el('b',{},c.brand),el('div',{class:'muted'},`${slotOf(c.slot_id).label||c.slot_id} · ${c.starts_on} to ${c.ends_on} · share ${c.share}`)),
+      el('span',{class:'st '+st},st),el('button',{class:'btn',type:'button',onclick:()=>openEditor(c)},'Edit'));}):[el('p',{class:'muted'},'No campaigns yet.')]));}
+function openEditor(c,prefill={}){const base={brand:'',slot_id:(D.slots.find(s=>s.enabled)||D.slots[0]||{}).id,link:'',starts_on:todayIST(),ends_on:todayIST(13),share:1,enabled:true,lines:null,art:{},enquiry_id:null};
+  const cc=Object.assign(base,c||{},prefill);E={id:c?c.id:null,art:Object.assign({},cc.art),enquiry_id:cc.enquiry_id,files:{}};
+  selectTab('campaigns');drawEditor(cc);$('#editor').scrollIntoView({block:'start'});}
+function drawEditor(c){const f=(label,input)=>el('div',{},el('label',{for:input.id},label),input);
+  const slotSel=el('select',{id:'cSlot'},D.slots.map(s=>el('option',{value:s.id,selected:s.id===c.slot_id},`${s.label} (${KIND[s.kind]}${s.enabled?'':', off'})`)));
+  const artBox=part=>{const inp=el('input',{type:'file',id:'c'+(part==='wide'?'Wide':'Tall'),accept:Object.keys(TYPES).join(',')}),
+      prev=el('img',{class:'prev',alt:'',hidden:!E.art[part],src:E.art[part]||''}),err=el('p',{class:'err',id:'c'+(part==='wide'?'Wide':'Tall')+'Err',role:'alert'}),hint=el('p',{class:'muted',id:'hint-'+part});
+    inp.onchange=async()=>{const file=inp.files[0];err.textContent='';delete E.files[part];if(!file)return;
+      const bad=await checkArt(file,slotOf(slotSel.value).kind,part);if(bad){err.textContent=bad;return;}
+      E.files[part]=file;prev.src=URL.createObjectURL(file);prev.hidden=false;};
+    return el('div',{id:part==='wide'?'cWideBox':'cTallBox'},el('label',{for:inp.id},part==='wide'?'Wide artwork':'Tall panel'),hint,inp,err,prev);};
+  const L=c.lines||{},gi=(i,l)=>((L.greet||[])[i]||[])[l===0?0:1]||'',qi=(i,p,l)=>(((L.qa||[])[i]||{})[p]||[])[l]||'';
+  const greet=[0,1,2].map(i=>el('div',{class:'pair','data-greet':i},
+    el('input',{'data-lang':'en',maxLength:120,placeholder:`Greeting ${i+1} in English${i?' (optional)':''}`,value:gi(i,0)}),
+    el('input',{'data-lang':'hi',maxLength:120,placeholder:'हिन्दी में',value:gi(i,1)})));
+  const qa=[0,1,2].map(i=>el('div',{class:'pair','data-qa':i},
+    el('input',{'data-part':'q','data-lang':'en',maxLength:120,placeholder:`Question ${i+1} in English${i>1?' (optional)':''}`,value:qi(i,'q',0)}),
+    el('input',{'data-part':'q','data-lang':'hi',maxLength:120,placeholder:'सवाल हिन्दी में',value:qi(i,'q',1)}),
+    el('textarea',{'data-part':'a','data-lang':'en',maxLength:280,rows:2,placeholder:'Answer in English',value:qi(i,'a',0)}),
+    el('textarea',{'data-part':'a','data-lang':'hi',maxLength:280,rows:2,placeholder:'जवाब हिन्दी में',value:qi(i,'a',1)})));
+  const preview=el('button',{class:'btn',type:'button',id:'cPreview',hidden:!E.id,onclick:()=>window.open(location.origin+'/?preview='+E.id,'_blank')},'Preview in game');
+  $('#editor').replaceChildren(el('form',{class:'card',onsubmit:e=>{e.preventDefault();saveCampaign();}},
+    el('h2',{},E.id?'Edit campaign':'New campaign'),
+    el('div',{class:'fields'},
+      f('Brand',el('input',{id:'cBrand',maxLength:80,value:c.brand})),f('Slot',slotSel),
+      f('Link (https://)',el('input',{id:'cLink',type:'url',value:c.link,placeholder:'https://brand.example/offer'})),
+      f('Starts',el('input',{id:'cStart',type:'date',value:c.starts_on})),f('Ends',el('input',{id:'cEnd',type:'date',value:c.ends_on})),
+      f('Rotation share (1–10)',el('input',{id:'cShare',type:'number',min:1,max:10,step:1,value:c.share})),
+      el('div',{},el('label',{class:'switch'},el('input',{type:'checkbox',id:'cEnabled',checked:c.enabled}),'Switched on'))),
+    el('div',{class:'art'},artBox('wide'),artBox('tall')),
+    el('fieldset',{id:'cLinesBox'},el('legend',{},'Shopkeeper lines (English and Hindi)'),
+      el('p',{class:'muted'},'1–3 greetings he says when someone walks up, and 2–3 questions players can ask.'),
+      el('div',{class:'lines'},greet),el('div',{class:'lines'},qa)),
+    el('p',{class:'err',id:'cErr',role:'alert'}),
+    el('div',{class:'row'},el('button',{class:'btn solid',type:'submit',id:'cSave'},'Save campaign'),preview,
+      el('button',{class:'btn',type:'button',onclick:()=>{E=null;$('#editor').replaceChildren();}},'Close'),el('span',{class:'ok',id:'cMsg',role:'status'}))));
+  slotSel.onchange=fitEditor;fitEditor();}
+// what the slot kind needs: a tall panel for stalls, lines for the premium stall
+function fitEditor(){const k=slotOf($('#cSlot').value).kind,ex=EXAMPLE[k]||EXAMPLE.hoarding;
+  $('#cTallBox').hidden=k==='hoarding';$('#cLinesBox').hidden=k!=='premium_stall';
+  $('#hint-wide').textContent=`16:9, for example ${ex.wide}. JPG, PNG or WebP up to 1 MB.`;
+  $('#hint-tall').textContent='9:16, for example 1080×1920. Keep the bottom sixth free of text: the stall counter hides it.';}
+function readLines(){const val=sel=>{const e=$('#cLinesBox '+sel);return e?e.value.trim():'';},greet=[],qa=[];
+  for(let i=0;i<3;i++){const en=val(`[data-greet='${i}'] [data-lang=en]`),hi=val(`[data-greet='${i}'] [data-lang=hi]`);
+    if(en||hi){if(!en||!hi)return{error:`Greeting ${i+1} needs both English and Hindi.`};greet.push([en,hi]);}}
+  for(let i=0;i<3;i++){const g=(p,l)=>val(`[data-qa='${i}'] [data-part=${p}][data-lang=${l}]`),q=[g('q','en'),g('q','hi')],a=[g('a','en'),g('a','hi')];
+    if([...q,...a].some(Boolean)){if(![...q,...a].every(Boolean))return{error:`Question ${i+1} needs the question and the answer in both English and Hindi.`};qa.push({q,a});}}
+  if(!greet.length)return{error:'Add at least 1 greeting for the shopkeeper.'};
+  if(qa.length<2)return{error:'Add at least 2 questions and answers.'};
+  return{lines:{greet,qa}};}
+async function saveCampaign(){const err=$('#cErr'),msg=$('#cMsg'),v=id=>$('#'+id).value.trim();err.textContent='';msg.textContent='';
+  const slot=v('cSlot'),kind=slotOf(slot).kind,stall=kind!=='hoarding',brand=v('cBrand'),link=v('cLink'),starts=v('cStart'),ends=v('cEnd'),share=Number(v('cShare'));
+  const no=t=>{err.textContent=t;};
+  if(!brand)return no('Add the brand name.');
+  if(!/^https:\/\/\S+$/.test(link))return no('The link must start with https://');
+  if(!starts||!ends)return no('Pick the start and end dates.');
+  if(ends<starts)return no('The end date is before the start date.');
+  if(!Number.isInteger(share)||share<1||share>10)return no('Rotation share is a whole number from 1 to 10.');
+  if($('#cWideErr').textContent||(stall&&$('#cTallErr').textContent))return no('Fix the artwork first.');
+  if(!E.files.wide&&!E.art.wide)return no('Add the wide artwork.');
+  if(stall&&!E.files.tall&&!E.art.tall)return no('A stall also needs the tall panel artwork.');
+  let lines=null;if(kind==='premium_stall'){const r=readLines();if(r.error)return no(r.error);lines=r.lines;}
+  const id=E.id||crypto.randomUUID(),art={wide:E.art.wide};if(stall)art.tall=E.art.tall;
+  $('#cSave').disabled=true;
+  try{for(const part of stall?['wide','tall']:['wide']){const file=E.files[part];if(!file)continue;
+      const path=`campaigns/${id}/${part}.${TYPES[file.type]}`,{error}=await sb.storage.from('brand-art').upload(path,file,{upsert:true,contentType:file.type});
+      if(error){$(part==='wide'?'#cWideErr':'#cTallErr').textContent=`The upload didn't work (${error.message}). Nothing was saved.`;return;}
+      art[part]=sb.storage.from('brand-art').getPublicUrl(path).data.publicUrl+'?v='+Date.now();}
+    const row={id,brand,slot_id:slot,link:withUtm(link,slot),art,lines,starts_on:starts,ends_on:ends,share,enabled:$('#cEnabled').checked,enquiry_id:E.enquiry_id};
+    const {error}=E.id?await sb.from('campaigns').update(row).eq('id',id):await sb.from('campaigns').insert(row);
+    if(error)return no("Couldn't save: "+error.message);
+    E.id=id;E.art=art;E.files={};$('#cWide').value='';$('#cTall').value='';$('#cLink').value=row.link;
+    $('#cPreview').hidden=false;msg.textContent='Saved.';await loadAll();}
+  finally{$('#cSave').disabled=false;}}
+TABS.campaigns=renderCampaigns;
 
 boot();
 })();
