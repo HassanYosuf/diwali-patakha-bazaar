@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Bazaar Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0920;--card:#1a1233;--card2:#221842;--line:rgba(255,255,255,.12);--ink:#f6efe2;--muted:#b3a8c9;--accent:#ffb627;--ok:#4ade80;--bad:#ff6b81;--body:'Mukta',system-ui,sans-serif;}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 15px/1.45 var(--body);overflow-wrap:anywhere}
+[hidden]{display:none!important}
+h1,h2,h3{margin:0;line-height:1.2}
+h1{font-size:20px;color:var(--accent)}h2{font-size:17px}h3{font-size:15px}
+p{margin:0}
+.muted{color:var(--muted)}
+.center{max-width:420px;margin:12vh auto 0;padding:0 16px;display:flex;flex-direction:column;gap:12px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--line)}
+.who{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:10px 16px;border-bottom:1px solid var(--line)}
+.tabs button{flex:none;height:34px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink);font:700 14px var(--body);cursor:pointer}
+.tabs button[aria-selected=true]{background:var(--accent);border-color:var(--accent);color:#1a0f2e}
+.badge{display:inline-block;min-width:18px;padding:0 5px;margin-left:4px;border-radius:999px;background:var(--bad);color:#fff;font-size:12px;line-height:18px;text-align:center}
+main{max-width:1000px;margin:0 auto;padding:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.spread{justify-content:space-between}
+.tag{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.live{display:flex;align-items:center;gap:10px;padding:6px;border-radius:10px;background:var(--card2)}
+.thumb{width:64px;height:36px;flex:none;object-fit:cover;border-radius:6px;background:#2a1a4a}
+.share{margin-left:auto;font-weight:800;color:var(--accent)}
+.btn{height:36px;padding:0 14px;border-radius:10px;border:1px solid rgba(255,182,39,.55);background:rgba(255,182,39,.12);color:var(--ink);font:700 14px var(--body);cursor:pointer}
+.btn.solid{background:var(--accent);color:#1a0f2e;border-color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:default}
+label{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+input,select,textarea{width:100%;min-width:0;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--ink);padding:8px 12px;font:600 15px var(--body)}
+input[type=checkbox]{width:auto}
+.switch{display:inline-flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink)}
+.switch input{appearance:none;-webkit-appearance:none;width:42px;height:24px;border-radius:999px;background:#3a2d5c;border:none;padding:0;position:relative;cursor:pointer;transition:background .15s}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .15s}
+.switch input:checked{background:var(--ok)}.switch input:checked::after{transform:translateX(18px)}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);max-width:calc(100% - 32px);padding:10px 16px;border-radius:12px;background:#2c1f52;border:1px solid var(--line);z-index:9}
+</style>
+</head>
+<body>
+<section id="signin" class="center" hidden>
+  <h1>Phatake Bazaar admin</h1>
+  <p class="muted">Sign in with an email the owner has added.</p>
+  <form id="signinF" class="center" style="margin:0;padding:0">
+    <label for="email">Email</label><input id="email" type="email" autocomplete="email" required>
+    <button class="btn solid" type="submit">Send login link</button>
+    <p id="signinNote" class="muted" role="status"></p>
+  </form>
+</section>
+<section id="sent" class="center" hidden>
+  <h1>Check your email</h1>
+  <p>We sent a login link to <b id="sentTo"></b>. Open it on this device.</p>
+  <button class="btn" type="button" id="again">Use another email</button>
+</section>
+<section id="denied" class="center" hidden>
+  <h1>Not authorised</h1>
+  <p><b id="deniedWho"></b> isn't on the admin list. Ask the owner to add you.</p>
+  <button class="btn" type="button" data-signout>Sign out</button>
+</section>
+<div id="app" hidden>
+  <header><h1>Bazaar admin</h1><div class="who"><span id="me"></span><button class="btn" type="button" data-signout>Sign out</button></div></header>
+  <nav class="tabs" role="tablist">
+    <button role="tab" type="button" aria-controls="slots" aria-selected="true">Slots</button>
+    <button role="tab" type="button" aria-controls="campaigns" aria-selected="false">Campaigns</button>
+    <button role="tab" type="button" aria-controls="stats" aria-selected="false">Stats</button>
+    <button role="tab" type="button" aria-controls="enquiries" aria-selected="false">Enquiries<span class="badge" id="newCount" hidden></span></button>
+  </nav>
+  <main>
+    <section id="slots" role="tabpanel"><div class="grid" id="slotGrid"></div></section>
+    <section id="campaigns" role="tabpanel" hidden></section>
+    <section id="stats" role="tabpanel" hidden></section>
+    <section id="enquiries" role="tabpanel" hidden></section>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="sb-config.js"></script>
+<script>
+/* Admin for Phatake Bazaar brand placements. Everything here goes through the signed-in admin's session;
+   the database rules decide what they may read and change. */
+(()=>{"use strict";
+const $=s=>document.querySelector(s);
+const sb=supabase.createClient(SB.url,SB.key);
+// tiny DOM builder: text always goes in as text, never as HTML
+function el(tag,attrs={},...kids){const e=document.createElement(tag);
+  for(const [k,v] of Object.entries(attrs)){if(v===false||v==null)continue;if(k==='class')e.className=v;else if(k.startsWith('on'))e[k]=v;else if(k in e&&k!=='list')e[k]=v;else e.setAttribute(k,v===true?'':v);}
+  for(const k of kids.flat())if(k!=null&&k!==false)e.append(k instanceof Node?k:String(k));return e;}
+const todayIST=(days=0)=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata'}).format(new Date(Date.now()+days*864e5));
+const thumb=c=>c.art&&c.art.wide?el('img',{class:'thumb',src:c.art.wide,alt:''}):el('span',{class:'thumb'});
+const KIND={premium_stall:'Premium stall',hoarding:'Hoarding',basic_stall:'Basic stall'};
+const D={slots:[],campaigns:[]};
+let toastT;
+function toast(t){let d=$('.toast');if(!d){d=el('div',{class:'toast',role:'status'});document.body.append(d);}d.textContent=t;d.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{d.hidden=true;},4000);}
+function show(id){for(const s of ['signin','sent','denied','app'])$('#'+s).hidden=s!==id;}
+
+/* sign-in: emailed link, existing users only (sign-ups are off) */
+$('#signinF').onsubmit=async e=>{e.preventDefault();const email=$('#email').value.trim().toLowerCase(),note=$('#signinNote');note.textContent='Sending…';
+  const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:location.origin+location.pathname}});
+  if(error){note.textContent=/signup|not allowed/i.test(error.message)?"That email isn't set up for the admin page.":"Couldn't send the link: "+error.message;return;}
+  note.textContent='';$('#sentTo').textContent=email;show('sent');};
+$('#again').onclick=()=>show('signin');
+for(const b of document.querySelectorAll('[data-signout]'))b.onclick=async()=>{await sb.auth.signOut();show('signin');};
+
+async function boot(){const {data:{session}}=await sb.auth.getSession();if(!session){show('signin');return;}
+  const {data:ok,error}=await sb.rpc('is_admin');
+  if(error||!ok){$('#deniedWho').textContent=session.user.email;show('denied');return;}
+  $('#me').textContent=session.user.email;show('app');await loadAll();}
+
+async function loadAll(){const [s,c]=await Promise.all([sb.from('slots').select('*').order('id'),sb.from('campaigns').select('*').order('starts_on')]);
+  if(s.error||c.error){toast("Couldn't load: "+(s.error||c.error).message);return;}
+  D.slots=s.data;D.campaigns=c.data;for(const id in TABS)if(!$('#'+id).hidden)TABS[id]();}
+
+/* tabs */
+const TABS={slots:renderSlots};
+function selectTab(id){for(const b of document.querySelectorAll('[role=tab]')){const t=b.getAttribute('aria-controls'),on=t===id;b.setAttribute('aria-selected',String(on));$('#'+t).hidden=!on;}
+  if(TABS[id])TABS[id]();}
+for(const b of document.querySelectorAll('[role=tab]'))b.onclick=()=>selectTab(b.getAttribute('aria-controls'));
+
+/* slots: switch each one on or off, see who is live there now and who is next */
+const liveOn=(slotId,day=todayIST())=>D.campaigns.filter(c=>c.slot_id===slotId&&c.enabled&&c.starts_on<=day&&c.ends_on>=day);
+function renderSlots(){const g=$('#slotGrid');g.replaceChildren();const day=todayIST();
+  for(const s of D.slots){const live=liveOn(s.id,day),tot=live.reduce((t,c)=>t+c.share,0);
+    const next=D.campaigns.filter(c=>c.slot_id===s.id&&c.enabled&&c.starts_on>day).sort((a,b)=>a.starts_on.localeCompare(b.starts_on))[0];
+    const sw=el('input',{type:'checkbox',checked:s.enabled});
+    sw.onchange=async()=>{sw.disabled=true;const {error}=await sb.from('slots').update({enabled:sw.checked}).eq('id',s.id);
+      if(error){sw.checked=!sw.checked;sw.disabled=false;toast("Couldn't save: "+error.message);return;}s.enabled=sw.checked;renderSlots();};
+    g.append(el('article',{class:'card slot-card','data-slot':s.id},
+      el('div',{class:'row spread'},el('div',{},el('h3',{},s.label),el('span',{class:'tag'},KIND[s.kind]||s.kind)),el('label',{class:'switch'},sw,s.enabled?'On':'Off')),
+      !s.enabled?el('p',{class:'muted'},'Off: nothing is drawn here.'):!live.length?el('p',{class:'muted'},'Showing Diwali art'):null,
+      s.enabled?live.map(c=>el('div',{class:'live'},thumb(c),el('span',{},c.brand),el('span',{class:'share'},Math.round(c.share/tot*100)+'%'))):null,
+      next?el('p',{class:'muted'},`Next: ${next.brand} from ${next.starts_on}`):null));}}
+
+boot();
+})();
+</script>
+</body>
+</html>
