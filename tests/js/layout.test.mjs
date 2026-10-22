@@ -28,30 +28,30 @@ test('KollabKit and the brand stall keep their neighbours', () => {
 });
 
 test('slotAt puts slot 0 on the gate side facing the centre', () => {
-  const s = L.slotAt(0, 61);
-  assert.ok(near(s.x, 0) && near(s.z, -15) && near(Math.cos(s.ry), -1) && near(Math.sin(s.ry), 0), JSON.stringify(s)); // faces -z, toward the centre
-  assert.ok(near(L.slotAt(10, 61).z, -137));
+  const s = L.slotAt(0, 31);
+  assert.ok(near(s.x, 0) && near(s.z, -1) && near(Math.cos(s.ry), -1) && near(Math.sin(s.ry), 0), JSON.stringify(s)); // faces -z, toward the centre
+  assert.ok(near(L.slotAt(10, 31).z, -63));
 });
 
 test('zoneAt names every part of the map', () => {
   assert.equal(L.zoneAt(0, 8), 'lane');
-  assert.equal(L.zoneAt(0, -70), 'maidan');
-  assert.equal(L.zoneAt(0, -30), 'ring');
-  assert.equal(L.zoneAt(0, -140), 'corridor');
-  assert.equal(L.zoneAt(0, -200), 'jhoola');
-  assert.equal(L.zoneAt(120, 0), 'outside');
+  assert.equal(L.zoneAt(0, -34), 'maidan');
+  assert.equal(L.zoneAt(0, -10), 'ring');
+  assert.equal(L.zoneAt(0, -64), 'corridor');
+  assert.equal(L.zoneAt(0, -95), 'jhoola');
+  assert.equal(L.zoneAt(60, 0), 'outside');
   assert.equal(L.zoneAt(0, 30), 'outside');
 });
 
 test('clampToMap keeps far friends where they are and pulls strays in', () => {
-  assert.deepEqual(L.clampToMap(-75, -238), { x: -75, z: -238 });
-  assert.deepEqual(L.clampToMap(500, -500), { x: 87, z: -245 });
+  assert.deepEqual(L.clampToMap(-40, -115), { x: -40, z: -115 });
+  assert.deepEqual(L.clampToMap(500, -500), { x: 45, z: -120 });
 });
 
 test('clampToMaidan pulls crackers onto the maidan edge', () => {
-  const p = L.clampToMaidan(0, -30);
-  assert.ok(near(Math.hypot(p.x - L.C.x, p.z - L.C.z), 36), JSON.stringify(p));
-  assert.deepEqual(L.clampToMaidan(0, -72), { x: 0, z: -72 });
+  const p = L.clampToMaidan(0, -10);
+  assert.ok(near(Math.hypot(p.x - L.C.x, p.z - L.C.z), 18), JSON.stringify(p));
+  assert.deepEqual(L.clampToMaidan(0, -34), { x: 0, z: -34 });
 });
 
 // footprints as axis-aligned boxes; circles use their bounding box, which is stricter
@@ -90,16 +90,16 @@ const open = (x, z) => L.walkable(x, z) && !L.blocked(x, z);
 function mulberry32(a) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
 test('walkable covers the lane, ring, corridor and jhoola ground only', () => {
-  const yes = [[L.SPAWN.x, L.SPAWN.z], [0, L.GATE.z], [0, -72], [0, -140], [0, -200], [75, -238]];
+  const yes = [[L.SPAWN.x, L.SPAWN.z], [0, L.GATE.z], [0, -34], [0, -64], [0, -95], [38, -114]];
   L.ORDER.forEach((n, k) => { if (n) { const s = L.slotAt(k, L.RING.walk - 0.5); yes.push([s.x, s.z]); } });
   for (const [x, z] of yes) assert.ok(L.walkable(x, z), `${x},${z} should be walkable`);
-  for (const [x, z] of [[0.3, -76], [0, 11], [9, 0], [12, -140], [86, -200], [0, -244]]) assert.ok(!L.walkable(x, z), `${x},${z} should not be walkable`);
+  for (const [x, z] of [[0.3, -32], [0, 11], [5, 8], [7, -64], [44, -95], [0, -119]]) assert.ok(!L.walkable(x, z), `${x},${z} should not be walkable`);
 });
 
 test('blocked marks the rides and maut ka kuan, and nothing else', () => {
   const yes = [[L.WHEEL.x, L.WHEEL.z], ...Object.values(L.RIDES).map((r) => [r.x, r.z]), [L.MAUT.stairs.x, L.MAUT.stairs.z]];
   for (const [x, z] of yes) assert.ok(L.blocked(x, z), `${x},${z} should be blocked`);
-  for (const [x, z] of [[0, -200], [-40, -200], [60, -160]]) assert.ok(!L.blocked(x, z), `${x},${z} should be clear`);
+  for (const [x, z] of [[0, -95], [-20, -95], [35, -75]]) assert.ok(!L.blocked(x, z), `${x},${z} should be clear`);
 });
 
 function pathOk(fx, fz, tx, tz) {
@@ -126,7 +126,7 @@ test('route keeps every step on open ground for 2,000 random walks', () => {
 });
 
 test('the way from the gate to the back of the jhoola ground runs up the corridor', () => {
-  const pts = pathOk(0, 8, 10, -238);
+  const pts = pathOk(0, 8, 10, -114);
   assert.ok(Array.isArray(pts), pts);
   let corridor = false;
   for (let i = 0; i < pts.length - 1; i++) for (let j = 0; j <= 40; j++) {
@@ -137,10 +137,10 @@ test('the way from the gate to the back of the jhoola ground runs up the corrido
 });
 
 test('nearestWalkable pulls a tap outside the fence to the nearest open ground', () => {
-  const a = L.nearestWalkable(90, -200);
+  const a = L.nearestWalkable(50, -95);
   assert.ok(L.walkable(a.x, a.z) && !L.blocked(a.x, a.z), JSON.stringify(a));
-  assert.ok(Math.hypot(a.x - 90, a.z + 200) < 8, JSON.stringify(a));
+  assert.ok(Math.hypot(a.x - 50, a.z + 95) < 8, JSON.stringify(a));
   const b = L.nearestWalkable(0, 30);
   assert.ok(L.walkable(b.x, b.z) && Math.hypot(b.x, b.z - 10) < 3, JSON.stringify(b));
-  assert.deepEqual(L.nearestWalkable(0, -200), { x: 0, z: -200 });
+  assert.deepEqual(L.nearestWalkable(0, -95), { x: 0, z: -95 });
 });

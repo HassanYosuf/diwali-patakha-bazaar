@@ -802,9 +802,9 @@ function buildGround(){
   const edge=new THREE.Mesh(new THREE.RingGeometry(RING.path-.18,RING.path,160),lam('#c9a36a',{emissive:'#2a1e08'}));edge.rotation.x=-Math.PI/2;edge.position.set(C.x,.016,C.z);scene.add(edge);
   for(const [z0,z1,hw] of [[C.z+RING.walk-1,ENTRY.z1+1,ENTRY.hx+.6],[NORTH.z0-1,C.z-RING.walk+1,NORTH.hx+.4]]){const L=z1-z0;const m=new THREE.Mesh(new THREE.PlaneGeometry(hw*2,L),bmat.clone());m.material.map=brick.clone();m.material.map.repeat.set(hw*2/2,L/2);m.material.map.needsUpdate=true;
     m.rotation.x=-Math.PI/2;m.position.set(0,.013,(z0+z1)/2);m.userData.ground=true;scene.add(m);clickables.push(m);}
-  const rg=new THREE.Mesh(new THREE.CircleGeometry(10,64),new THREE.MeshLambertMaterial({map:rangoliTex,transparent:true}));rg.rotation.x=-Math.PI/2;rg.position.set(C.x,.02,C.z);scene.add(rg);rg.userData.ground=true;clickables.push(rg);
+  const rg=new THREE.Mesh(new THREE.CircleGeometry(6,64),new THREE.MeshLambertMaterial({map:rangoliTex,transparent:true}));rg.rotation.x=-Math.PI/2;rg.position.set(C.x,.02,C.z);scene.add(rg);rg.userData.ground=true;clickables.push(rg);
   // soft warm wash over the maidan, fading out before the stalls
-  const wash=new THREE.PointLight(0xffc78a,.9,65,1.2);wash.position.set(C.x,10,C.z);scene.add(wash);
+  const wash=new THREE.PointLight(0xffc78a,.9,34,1.2);wash.position.set(C.x,10,C.z);scene.add(wash);
 }
 // painted light pools: warm glow on the ground under every lamp, stall and the pole, on two planes (lane and ring; corridor and jhoola ground)
 function buildPools(){
@@ -833,7 +833,7 @@ function lampPost(x,z,loose){const g=new THREE.Group();g.position.set(x,0,z);con
   cone.position.y=1.65;g.add(cone);scene.add(g);if(!loose)LAMPS.push({x,z});return g;}
 function buildPlaza(){
   // tall central pole wrapped in marigold, crowned with a big kandil
-  const H=24;const pole=new THREE.Mesh(new THREE.CylinderGeometry(.16,.26,H,12),new THREE.MeshLambertMaterial({map:canvasTex(64,512,(g,w,h)=>{for(let i=0;i<32;i++){g.fillStyle=i%2?'#f3e6cf':'#c4283d';g.save();g.translate(0,i*16);g.transform(1,.4,0,1,0,0);g.fillRect(-20,0,w+40,16);g.restore();}})}));
+  const H=16;const pole=new THREE.Mesh(new THREE.CylinderGeometry(.16,.26,H,12),new THREE.MeshLambertMaterial({map:canvasTex(64,512,(g,w,h)=>{for(let i=0;i<32;i++){g.fillStyle=i%2?'#f3e6cf':'#c4283d';g.save();g.translate(0,i*16);g.transform(1,.4,0,1,0,0);g.fillRect(-20,0,w+40,16);g.restore();}})}));
   pole.position.set(C.x,H/2,C.z);scene.add(pole);
   for(let i=0;i<120&&mgN<MG_MAX;i++){const a=i*.42,y=1+i*.1;_m.makeTranslation(C.x+Math.cos(a)*.3,y,C.z+Math.sin(a)*.3);marigold.setMatrixAt(mgN,_m);marigold.setColorAt(mgN,_c.set(i%4?'#ff8c12':'#ffd23a'));mgN++;}
   const crown=new THREE.Group();crown.position.set(C.x,H+.6,C.z);crown.scale.setScalar(2.4);scene.add(crown);
@@ -843,13 +843,13 @@ function buildPlaza(){
   const top=new V3(C.x,H-.4,C.z);
   // canopy: string lights and bunting fanning out to every stall, kandils hanging along them
   const hues=[42,350,160,48,200,12,280,30];
-  STALLS.forEach((s,i)=>{const a=s.group.localToWorld(new V3(0,3.9,1.7));stringLights(top,a,4.5,50,hues);
-    bunting(new V3(C.x,H-2.6,C.z),s.group.localToWorld(new V3(0,3.2,1.9)),3.8);
-    const t=.58;kandil(top.x+(a.x-top.x)*t,top.y+(a.y-top.y)*t-Math.sin(Math.PI*t)*4.5-.9,top.z+(a.z-top.z)*t,['#ff4f7e','#ffb627','#22c7b8','#9b7bff','#ff7a1a','#4ade80'][i%6]);});
-  for(let k=0;k<LY.SLOTS;k++)for(const f of[1/3,2/3]){const a=Math.PI/2+SLOT*(k+f),r=RING.walk+.7;lampPost(C.x+Math.cos(a)*r,C.z+Math.sin(a)*r);}
+  STALLS.forEach((s,i)=>{const a=s.group.localToWorld(new V3(0,3.9,1.7));stringLights(top,a,2.2,32,hues);
+    bunting(new V3(C.x,H-2.6,C.z),s.group.localToWorld(new V3(0,3.2,1.9)),1.8);
+    const t=.58;kandil(top.x+(a.x-top.x)*t,top.y+(a.y-top.y)*t-Math.sin(Math.PI*t)*2.2-.9,top.z+(a.z-top.z)*t,['#ff4f7e','#ffb627','#22c7b8','#9b7bff','#ff7a1a','#4ade80'][i%6]);});
+  for(let k=0;k<LY.SLOTS;k++){const a=Math.PI/2+SLOT*(k+.5),r=RING.walk+.7;lampPost(C.x+Math.cos(a)*r,C.z+Math.sin(a)*r);}
   // ring of string lights linking the lamp posts
   for(let i=0;i<LAMPS.length;i++){const a=LAMPS[i],b=LAMPS[(i+1)%LAMPS.length];const pa=new V3(a.x,3.3,a.z),pb=new V3(b.x,3.3,b.z);if(pa.distanceTo(pb)<12)stringLights(pa,pb,.8,16,[42,48,30]);}
-  const hint=textSprite('Maidan · burst crackers here',{size:.5});hint.position.set(C.x,3.6,C.z+15);scene.add(hint);
+  const hint=textSprite('Maidan · burst crackers here',{size:.5});hint.position.set(C.x,3.6,C.z+9);scene.add(hint);
   const hint2=textSprite('Parikrama path · stalls all around',{size:.38,col:'#f6ecd9'});hint2.position.set(0,3.4,C.z+RING.walk+.8);scene.add(hint2);
 }
 const diyas=[];const diyaGeo=new THREE.CylinderGeometry(.11,.07,.07,12);
@@ -859,8 +859,8 @@ function addDiya(x,z,lit){
   const hit=new THREE.Mesh(new THREE.SphereGeometry(.35,6,5),new THREE.MeshBasicMaterial({visible:false}));hit.position.set(x,.15,z);scene.add(hit);
   const d={x,z,lit,mesh:m,fl,p:Math.random()*9};hit.userData.diya=d;clickables.push(hit);diyas.push(d);fl.visible=lit;}
 function buildDiyas(){
-  for(let i=0;i<120;i++){const a=i/120*Math.PI*2;addDiya(C.x+Math.cos(a)*(RING.path-.35),C.z+Math.sin(a)*(RING.path-.35),Math.random()<.65);}
-  for(let i=0;i<28;i++){const a=i/28*Math.PI*2;addDiya(C.x+Math.cos(a)*10,C.z+Math.sin(a)*10,Math.random()<.75);}
+  for(let i=0;i<64;i++){const a=i/64*Math.PI*2;addDiya(C.x+Math.cos(a)*(RING.path-.35),C.z+Math.sin(a)*(RING.path-.35),Math.random()<.65);}
+  for(let i=0;i<16;i++){const a=i/16*Math.PI*2;addDiya(C.x+Math.cos(a)*6.6,C.z+Math.sin(a)*6.6,Math.random()<.75);}
   const dx=ENTRY.hx+.4;for(let z=ENTRY.z1-1;z>C.z+RING.walk;z-=2.2){addDiya(-dx,z,Math.random()<.7);addDiya(dx,z-1.1,Math.random()<.7);}}
 function buildCity(){
   const mat=new THREE.MeshLambertMaterial({color:'#1a1230',emissive:'#ffffff',emissiveMap:winTex,emissiveIntensity:.75});
@@ -868,8 +868,8 @@ function buildCity(){
     if(Math.random()<.5){const n=Math.round(w*2);for(let j=0;j<=n;j++)addBulb(x-w/2+j*w/n,h+.05,z,pick([42,48,350]));}};
   // lane-side rows (gaps at the two hoardings), a ring round the stalls, rows beside and behind the jhoola ground
   const lx=ENTRY.hx+9,jx=JG.x1+12;
-  for(const sd of[-1,1])for(let z=18;z>-12;z-=rand(5,7))if(!(z<2&&z>-10))addB(sd*rand(lx,lx+4),z,rand(4,6),rand(4,6),rand(6,13));
-  for(let i=0;i<84;i++){const a=i/84*Math.PI*2;const r=rand(RING.stall+24,RING.stall+48);const x=C.x+Math.cos(a)*r,z=C.z+Math.sin(a)*r;if(z>-30&&Math.abs(x)<lx+6)continue;if(z<JG.z1+6&&Math.abs(x)<jx)continue;addB(x,z,rand(6,10),rand(6,10),rand(9,24));}
+  const kz=LY.KK.entry.z;for(const sd of[-1,1])for(let z=18;z>C.z+RING.stall+6;z-=rand(5,7))if(Math.abs(z-kz)>5)addB(sd*rand(lx,lx+4),z,rand(4,6),rand(4,6),rand(6,13));
+  for(let i=0;i<84;i++){const a=i/84*Math.PI*2;const r=rand(RING.stall+24,RING.stall+48);const x=C.x+Math.cos(a)*r,z=C.z+Math.sin(a)*r;if(z>C.z+RING.stall&&Math.abs(x)<lx+6)continue;if(z<JG.z1+6&&Math.abs(x)<jx)continue;addB(x,z,rand(6,10),rand(6,10),rand(9,24));}
   for(const sd of[-1,1])for(let z=JG.z1+4;z>JG.z0-4;z-=rand(8,12))addB(sd*rand(jx,jx+15),z,rand(6,10),rand(6,10),rand(9,22));
   for(let x=JG.x0-6;x<=JG.x1+6;x+=rand(8,12))addB(x,rand(JG.z0-19,JG.z0-13),rand(6,9),rand(6,9),rand(10,24));
   // twinkling stars
@@ -961,7 +961,7 @@ function buildPeople(){
     NPCS.push(n);}
   // each kid circles on its own ring, all the same way round, so they never run into each other
   const kd=Math.random()<.5?-1:1;
-  for(let i=0;i<4;i++){const g=person({kid:true});NPCS.push({g,kid:true,ang:i/4*Math.PI*2,r:15+i*1.5,sp:rand(.25,.4)*kd,ph:Math.random()*6});}
+  for(let i=0;i<4;i++){const g=person({kid:true});NPCS.push({g,kid:true,ang:i/4*Math.PI*2,r:8+i*.8,sp:rand(.25,.4)*kd,ph:Math.random()*6});}
 }
 const BW={x:LY.BW.x,z:LY.BW.z,g:null,balloons:[]};
 function buildBalloonWala(){const g=person({col:'#f3e6cf',plain:true});g.position.set(BW.x,0,BW.z);g.rotation.y=-.6;BW.g=g;
@@ -2408,7 +2408,7 @@ function resize(){const w=window.innerWidth,h=window.innerHeight;renderer.setSiz
   if(composer){composer.setPixelRatio(renderer.getPixelRatio());composer.setSize(w,h);}}
 window.addEventListener('resize',resize);
 let ambT=1;
-function ambient(dt){ambT-=dt;if(ambT>0)return;ambT=rand(2,5);const a=rand(0,Math.PI*2),r=rand(170,250);burst(Math.cos(a)*r,rand(35,70),-116+Math.sin(a)*r,{scale:.9,far:2.2,n:.45});}
+function ambient(dt){ambT-=dt;if(ambT>0)return;ambT=rand(2,5);const a=rand(0,Math.PI*2),r=rand(90,140);burst(Math.cos(a)*r,rand(30,60),-54+Math.sin(a)*r,{scale:.9,far:2.2,n:.45});}
 let walkTest=false;// test probe only: walk through the crowd
 function blocked(x,z){if(!walkTest)for(const n of NPCS){if(!n.kid&&Math.abs(n.x-x)<.5&&Math.abs(n.z-z)<.5&&Math.hypot(n.x-x,n.z-z)<.45)return true;}if(LY.blocked(x,z))return true;if(Math.hypot(x-BW.x,z-BW.z)<.6)return true;if(Math.hypot(x-DHOL.x,z-DHOL.z)<.6)return true;
   return false;}

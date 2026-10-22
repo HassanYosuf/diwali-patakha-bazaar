@@ -3,22 +3,22 @@
 (function(root){
 "use strict";
 const VERSION=2;
-const C={x:0,z:-76};
-const RING={stall:61,front:58.7,walk:57.7,maid:36,path:38,pathOut:62.8};
-const NPC_BAND={r0:41,r1:56.5,lanes:[54,49]};
+const C={x:0,z:-32};
+const RING={stall:31,front:28.7,walk:27.7,maid:18,path:19,pathOut:32.8};
+const NPC_BAND={r0:20,r1:27,lanes:[26,23.5]};
 const SLOTS=20;
 // what stands in each ring slot, k=0 at the lane opening, counting round through the west side; the corridor opens at k=10
 const ORDER=[null,'Sharma Fireworks','Pappu Chaat','Laxmi Patakha','Chudi Bazaar','Ring Phenko','Jalebi Junction','Diya Ghar','kollabkit','Sivakasi Wale',
   null,'Mishra Halwai','brand:stall-ring-b','Kismat Chakra','Kulfi Wala','Gubbare Phodo','Khilona Ghar','Raja Rockets','Raju Chai','Gupta Crackers'];
-const ENTRY={hx:8,z1:10},SPAWN={x:0,z:8},GATE={z:-14.6,hx:8.6},NORTH={hx:9.5,z0:-148};
-const JG={x0:-85,x1:85,z0:-243,z1:-145},BOUNDS={x0:-87,x1:87,z0:-245,z1:12};
-const WHEEL={x:0,z:-151,hx:4.6,hz:1.6};
+const ENTRY={hx:4,z1:10},SPAWN={x:0,z:8},GATE={z:-.6,hx:4.6},NORTH={hx:5,z0:-71};
+const JG={x0:-43,x1:43,z0:-118,z1:-68},BOUNDS={x0:-45,x1:45,z0:-120,z1:12};
+const WHEEL={x:0,z:-74,hx:4.6,hz:1.6};
 // Maut ka Kuan: a wooden well (inner radius 8) with a gallery round the rim, and a straight stair up its south side
-const MAUT={x:29,z:-188,r:10,well:8,stairs:{x:29,z:-177.1,hx:4.8,hz:.9}};
-const RIDES={carousel:{x:-60,z:-168,r:4},columbus:{x:-56,z:-220,hx:5.8,hz:2},chairs:{x:0,z:-225,r:5.6},maut:{x:MAUT.x,z:MAUT.z,r:MAUT.r}};
-const KK={k:8,entry:{x:10.5,z:-4,ry:-.7,w:4.4},jhoola:{x:-50,z:-238,ry:.25,w:6.4}};
-const BRAND={'stall-ring-b':{kind:'premium_stall',k:12},'hoarding-entry-b':{kind:'hoarding',x:-10.5,z:-4,ry:.7,w:4.4}};
-const BW={x:-30.8,z:-39.2},DHOL={x:15.5,z:-30.6};
+const MAUT={x:24,z:-96,r:10,well:8,stairs:{x:24,z:-85.1,hx:4.8,hz:.9}};
+const RIDES={carousel:{x:-30,z:-84,r:4},columbus:{x:-30,z:-108,hx:5.8,hz:2},chairs:{x:-8,z:-106,r:5.6},maut:{x:MAUT.x,z:MAUT.z,r:MAUT.r}};
+const KK={k:8,entry:{x:7,z:1.5,ry:-.7,w:4.4},jhoola:{x:-14,z:-116.5,ry:.2,w:6.4}};
+const BRAND={'stall-ring-b':{kind:'premium_stall',k:12},'hoarding-entry-b':{kind:'hoarding',x:-7,z:1.5,ry:.7,w:4.4}};
+const BW={x:-15.4,z:-13.6},DHOL={x:7.8,z:-9.3};
 
 // slot k's spot at radius r; ry turns a group so its +z faces the ring centre, as the stalls are built
 function slotAt(k,r){const a=Math.PI/2+k*2*Math.PI/SLOTS;return{x:C.x+Math.cos(a)*r,z:C.z+Math.sin(a)*r,ry:Math.atan2(-Math.cos(a),-Math.sin(a)),a};}
