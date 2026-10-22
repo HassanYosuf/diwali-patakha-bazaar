@@ -1,11 +1,14 @@
 // Shared by track and enquire: origin checks, client IP, IP hashing and India's date.
 
-// ALLOWED_ORIGINS is comma-separated; "http://localhost:*" allows any port on that host
+// ALLOWED_ORIGINS is comma-separated. A trailing ":*" allows any port ("http://localhost:*"); a "*" inside the
+// host matches one run of letters, digits and dashes, never a dot ("https://site-*-team.vercel.app" for preview links)
 export function allowedOrigin(origin: string | null): boolean {
   if (!origin) return false;
-  return (Deno.env.get("ALLOWED_ORIGINS") ?? "").split(",").map((s) => s.trim()).filter(Boolean).some((p) =>
-    p.endsWith(":*") ? new RegExp("^" + p.slice(0, -2).replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "(:\\d+)?$").test(origin) : p === origin
-  );
+  return (Deno.env.get("ALLOWED_ORIGINS") ?? "").split(",").map((s) => s.trim()).filter(Boolean).some((p) => {
+    const anyPort = p.endsWith(":*"), host = anyPort ? p.slice(0, -2) : p;
+    const re = host.split("*").map((s) => s.replace(/[.+?^${}()|[\]\\]/g, "\\$&")).join("[a-z0-9-]+");
+    return new RegExp("^" + re + (anyPort ? "(:\\d+)?" : "") + "$").test(origin);
+  });
 }
 
 export function cors(req: Request): Headers {

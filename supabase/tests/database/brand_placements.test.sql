@@ -1,27 +1,31 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(42);
+select plan(44);
 
 -- start from empty brand tables whatever other test suites left behind (rolled back at the end)
 delete from public.stats_daily; delete from public.campaigns; delete from public.enquiries;
-update public.slots set enabled = id in ('stall-ring', 'hoarding-entry', 'hoarding-jhoola');
+update public.slots set enabled = (id = 'hoarding-entry-b');
 
 -- fixtures (as postgres)
 insert into public.admins(email) values ('admin@test.local') on conflict do nothing;
 insert into public.campaigns(id, brand, slot_id, link, art, starts_on, ends_on, enabled) values
-  ('00000000-0000-0000-0000-0000000000a1', 'Acme',   'hoarding-entry', 'https://acme.example/', '{"wide":"https://cdn.example/a.jpg"}', '2026-11-01', '2026-11-01', true),
-  ('00000000-0000-0000-0000-0000000000a2', 'Off',    'hoarding-entry', 'https://off.example/',  '{"wide":"https://cdn.example/b.jpg"}', '2026-11-01', '2026-11-30', false),
+  ('00000000-0000-0000-0000-0000000000a1', 'Acme',   'hoarding-entry-b', 'https://acme.example/', '{"wide":"https://cdn.example/a.jpg"}', '2026-11-01', '2026-11-01', true),
+  ('00000000-0000-0000-0000-0000000000a2', 'Off',    'hoarding-entry-b', 'https://off.example/',  '{"wide":"https://cdn.example/b.jpg"}', '2026-11-01', '2026-11-30', false),
   ('00000000-0000-0000-0000-0000000000a3', 'Hidden', 'stall-ring-b',   'https://hid.example/',  '{"wide":"https://cdn.example/c.jpg"}', '2026-11-01', '2026-11-30', true),
-  ('00000000-0000-0000-0000-0000000000a4', 'Today',  'hoarding-jhoola','https://now.example/',  '{"wide":"https://cdn.example/d.jpg"}',
+  ('00000000-0000-0000-0000-0000000000a4', 'Today',  'hoarding-entry-b','https://now.example/',  '{"wide":"https://cdn.example/d.jpg"}',
      (now() at time zone 'Asia/Kolkata')::date, (now() at time zone 'Asia/Kolkata')::date, true);
 insert into public.enquiries(brand, name, contact, interest) values ('Bolt', 'Asha', 'asha@bolt.example', 'hoarding');
 insert into public.stats_daily(campaign_id, day, views, clicks) values ('00000000-0000-0000-0000-0000000000a1', '2026-11-01', 5, 1);
 
+-- KollabKit's spots are part of the game, not brand slots
+select is((select count(*)::int from public.slots where id in ('stall-ring', 'hoarding-entry', 'hoarding-jhoola')), 0, 'KollabKit spots are not brand slots');
+select is((select array_agg(id order by id) from public.slots), array['hoarding-entry-b', 'stall-ring-b'], 'brands get the two reserve spots');
+
 -- check constraints
-select throws_ok($$insert into public.campaigns(brand, slot_id, link, starts_on, ends_on) values ('X','hoarding-entry','javascript:alert(1)','2026-11-01','2026-11-02')$$, '23514', null, 'non-https link rejected');
-select throws_ok($$insert into public.campaigns(brand, slot_id, link, starts_on, ends_on, share) values ('X','hoarding-entry','https://x.example','2026-11-01','2026-11-02',0)$$, '23514', null, 'share 0 rejected');
-select throws_ok($$insert into public.campaigns(brand, slot_id, link, starts_on, ends_on, share) values ('X','hoarding-entry','https://x.example','2026-11-01','2026-11-02',11)$$, '23514', null, 'share 11 rejected');
-select throws_ok($$insert into public.campaigns(brand, slot_id, link, starts_on, ends_on) values ('X','hoarding-entry','https://x.example','2026-11-02','2026-11-01')$$, '23514', null, 'end before start rejected');
+select throws_ok($$insert into public.campaigns(brand, slot_id, link, starts_on, ends_on) values ('X','hoarding-entry-b','javascript:alert(1)','2026-11-01','2026-11-02')$$, '23514', null, 'non-https link rejected');
+select throws_ok($$insert into public.campaigns(brand, slot_id, link, starts_on, ends_on, share) values ('X','hoarding-entry-b','https://x.example','2026-11-01','2026-11-02',0)$$, '23514', null, 'share 0 rejected');
+select throws_ok($$insert into public.campaigns(brand, slot_id, link, starts_on, ends_on, share) values ('X','hoarding-entry-b','https://x.example','2026-11-01','2026-11-02',11)$$, '23514', null, 'share 11 rejected');
+select throws_ok($$insert into public.campaigns(brand, slot_id, link, starts_on, ends_on) values ('X','hoarding-entry-b','https://x.example','2026-11-02','2026-11-01')$$, '23514', null, 'end before start rejected');
 
 -- service role: counting and rate limits
 set local role service_role;
@@ -41,7 +45,7 @@ reset role;
 
 -- players (anon key)
 set local role anon;
-select is(jsonb_array_length(public.bazaar_ads('2026-11-01')->'slots'), 3, 'three slots are on');
+select is(jsonb_array_length(public.bazaar_ads('2026-11-01')->'slots'), 1, 'one slot is on');
 select ok(public.bazaar_ads('2026-11-01')->'campaigns' @> '[{"id":"00000000-0000-0000-0000-0000000000a1"}]', 'campaign live on its only day');
 select ok(not (public.bazaar_ads('2026-11-02')->'campaigns' @> '[{"id":"00000000-0000-0000-0000-0000000000a1"}]'), 'gone the day after');
 select ok(not (public.bazaar_ads('2026-10-31')->'campaigns' @> '[{"id":"00000000-0000-0000-0000-0000000000a1"}]'), 'not yet live the day before');
@@ -58,7 +62,7 @@ select throws_ok('select * from public.campaigns',   '42501', null, 'players can
 select throws_ok('select * from public.stats_daily', '42501', null, 'players cannot read stats');
 select throws_ok('select * from public.enquiries',   '42501', null, 'players cannot read enquiries');
 select throws_ok('select * from public.admins',      '42501', null, 'players cannot read admins');
-select throws_ok($$insert into public.campaigns(brand, slot_id, link, starts_on, ends_on) values ('X','hoarding-entry','https://x.example','2026-11-01','2026-11-02')$$, '42501', null, 'players cannot add campaigns');
+select throws_ok($$insert into public.campaigns(brand, slot_id, link, starts_on, ends_on) values ('X','hoarding-entry-b','https://x.example','2026-11-01','2026-11-02')$$, '42501', null, 'players cannot add campaigns');
 select throws_ok($$select public.track_event('v', '00000000-0000-0000-0000-0000000000a1', 'v', '2026-11-02')$$, '42501', null, 'players cannot call track_event directly');
 select throws_ok($$select public.rate_hit('k', 60, 2)$$, '42501', null, 'players cannot call rate_hit directly');
 reset role;
@@ -68,7 +72,7 @@ set local role authenticated;
 set local request.jwt.claims = '{"sub":"22222222-2222-2222-2222-222222222222","email":"user@test.local","role":"authenticated"}';
 select is((select count(*)::int from public.campaigns), 0, 'non-admin sees no campaigns');
 select is((select count(*)::int from public.enquiries), 0, 'non-admin sees no enquiries');
-select throws_ok($$insert into public.campaigns(brand, slot_id, link, starts_on, ends_on) values ('X','hoarding-entry','https://x.example','2026-11-01','2026-11-02')$$, '42501', null, 'non-admin cannot add campaigns');
+select throws_ok($$insert into public.campaigns(brand, slot_id, link, starts_on, ends_on) values ('X','hoarding-entry-b','https://x.example','2026-11-01','2026-11-02')$$, '42501', null, 'non-admin cannot add campaigns');
 update public.slots set enabled = true where id = 'stall-ring-b';
 select throws_ok($$insert into storage.objects(bucket_id, name) values ('brand-art', 'campaigns/x/wide.jpg')$$, '42501', null, 'non-admin cannot upload artwork');
 reset role;
@@ -77,7 +81,7 @@ select is((select enabled from public.slots where id = 'stall-ring-b'), false, '
 -- an admin
 set local role authenticated;
 set local request.jwt.claims = '{"sub":"11111111-1111-1111-1111-111111111111","email":"admin@test.local","role":"authenticated"}';
-select lives_ok($$insert into public.campaigns(brand, slot_id, link, starts_on, ends_on) values ('New','hoarding-entry','https://new.example','2026-11-01','2026-11-02')$$, 'admin adds a campaign');
+select lives_ok($$insert into public.campaigns(brand, slot_id, link, starts_on, ends_on) values ('New','hoarding-entry-b','https://new.example','2026-11-01','2026-11-02')$$, 'admin adds a campaign');
 update public.campaigns set share = 3 where brand = 'New';
 update public.slots set enabled = true where id = 'stall-ring-b';
 select is((select count(*)::int from public.stats_daily), 2, 'admin reads stats');

@@ -1,7 +1,7 @@
 import json, os, tempfile, urllib.request
 from PIL import Image
 from run import local, open_admin, reset_local, svc
-from test_admin import ist_today
+from test_admin import ist_today, slot_on
 
 LOCAL_ONLY = True
 TMP = tempfile.mkdtemp(prefix="pb-art-")
@@ -21,7 +21,7 @@ def open_editor(page):
     page.locator("#cBrand").wait_for(state="visible")
 
 
-def fill_basics(page, brand="Acme Tea", slot="hoarding-entry", link="https://acme.example/?a=1"):
+def fill_basics(page, brand="Acme Tea", slot="hoarding-entry-b", link="https://acme.example/?a=1"):
     page.locator("#cBrand").fill(brand)
     page.locator("#cSlot").select_option(slot)
     page.locator("#cLink").fill(link)
@@ -62,6 +62,7 @@ def test_artwork_is_checked_for_type_size_and_shape(browser):
 
 def test_a_hoarding_campaign_saves_with_tracking_tags_and_goes_live(browser):
     reset_local()
+    slot_on("hoarding-entry-b")
     page, rec = open_admin(browser)
     open_editor(page)
     fill_basics(page)
@@ -69,7 +70,7 @@ def test_a_hoarding_campaign_saves_with_tracking_tags_and_goes_live(browser):
     page.get_by_role("button", name="Save campaign").click()
     page.get_by_text("Saved.").wait_for(state="visible", timeout=10000)
     [row] = rows("Acme Tea")
-    assert row["link"] == "https://acme.example/?a=1&utm_source=phatake-bazaar&utm_medium=game&utm_campaign=hoarding-entry"
+    assert row["link"] == "https://acme.example/?a=1&utm_source=phatake-bazaar&utm_medium=game&utm_campaign=hoarding-entry-b"
     assert row["share"] == 2 and row["starts_on"] == ist_today(0) and row["ends_on"] == ist_today(6)
     assert row["art"]["wide"].startswith(local()["API_URL"] + "/storage/v1/object/public/brand-art/campaigns/" + row["id"] + "/wide.jpg")
     assert urllib.request.urlopen(row["art"]["wide"]).status == 200
@@ -90,9 +91,10 @@ def test_a_link_with_its_own_tracking_tags_is_left_alone(browser):
 
 def test_a_premium_stall_needs_tall_art_and_lines_then_appears_with_them(browser):
     reset_local()
+    slot_on("stall-ring-b")
     page, rec = open_admin(browser)
     open_editor(page)
-    fill_basics(page, brand="Bolt Sweets", slot="stall-ring", link="https://bolt.example/")
+    fill_basics(page, brand="Bolt Sweets", slot="stall-ring-b", link="https://bolt.example/")
     page.locator("#cWide").set_input_files(img("w-1920x1080.jpg", 1920, 1080))
     page.get_by_role("button", name="Save campaign").click()
     assert "tall" in page.locator("#cErr").inner_text().lower()
@@ -162,7 +164,7 @@ def test_the_full_editor_fits_a_phone(browser):
     reset_local()
     page, rec = open_admin(browser, viewport=(390, 844))
     open_editor(page)
-    page.locator("#cSlot").select_option("stall-ring")
+    page.locator("#cSlot").select_option("stall-ring-b")
     page.wait_for_timeout(300)
     assert page.locator("#cLinesBox").is_visible()
     assert page.evaluate("document.documentElement.scrollWidth") <= 390

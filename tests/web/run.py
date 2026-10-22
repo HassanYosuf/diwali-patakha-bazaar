@@ -119,7 +119,6 @@ def reset_local():
     svc("DELETE", "/rest/v1/stats_daily?day=not.is.null")
     svc("DELETE", "/rest/v1/campaigns?id=not.is.null")
     svc("DELETE", "/rest/v1/enquiries?id=not.is.null")
-    svc("PATCH", "/rest/v1/slots?id=in.(stall-ring,hoarding-entry,hoarding-jhoola)", {"enabled": True})
     svc("PATCH", "/rest/v1/slots?id=in.(stall-ring-b,hoarding-entry-b)", {"enabled": False})
     urllib.request.urlopen(urllib.request.Request(local()["MAILPIT_URL"] + "/api/v1/messages", method="DELETE"))
 

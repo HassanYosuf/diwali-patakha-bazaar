@@ -842,7 +842,7 @@ function buildPlaza(){
   STALLS.forEach((s,i)=>{const a=s.group.localToWorld(new V3(0,3.9,1.7));stringLights(top,a,1.6,26,hues);
     bunting(new V3(C.x,H-2.6,C.z),s.group.localToWorld(new V3(0,3.2,1.9)),1.4);
     const t=.58;kandil(top.x+(a.x-top.x)*t,top.y+(a.y-top.y)*t-Math.sin(Math.PI*t)*1.6-.9,top.z+(a.z-top.z)*t,['#ff4f7e','#ffb627','#22c7b8','#9b7bff','#ff7a1a','#4ade80'][i%6]);});
-  for(let k=0;k<18;k++){const a=Math.PI/2+SLOT*(k+.5),r=RING.walk+.7,gap=k===7||k===10;/* brand stalls can take these two gaps */const g=lampPost(C.x+Math.cos(a)*r,C.z+Math.sin(a)*r,gap);if(gap)GAP_LAMPS[k]=g;}
+  for(let k=0;k<18;k++){if(k===7)continue;/* KollabKit stand stands in this gap */const a=Math.PI/2+SLOT*(k+.5),r=RING.walk+.7,gap=k===10;/* the brand stall can take this one */const g=lampPost(C.x+Math.cos(a)*r,C.z+Math.sin(a)*r,gap);if(gap)GAP_LAMPS[k]=g;}
   // ring of string lights linking the lamp posts
   for(let i=0;i<LAMPS.length;i++){const a=LAMPS[i],b=LAMPS[(i+1)%LAMPS.length];const pa=new V3(a.x,3.3,a.z),pb=new V3(b.x,3.3,b.z);if(pa.distanceTo(pb)<10)stringLights(pa,pb,.6,12,[42,48,30]);}
   const hint=textSprite('Maidan · burst crackers here',{size:.5});hint.position.set(C.x,3.6,C.z+9);scene.add(hint);
@@ -1112,17 +1112,60 @@ function buildRides(){
   for(const R of RIDES){R.npcG=R.npc.map(i=>{const w=new THREE.Group(),g=person({plain:true,scale:1});g.rotation.y=Math.PI;w.add(g);scene.add(w);
     g.traverse(m=>{if(m.geometry===blobGeo)m.visible=false;});sitPose(g.userData.rig,R.astride);return{w,i};});}
 }
+/* ================= sponsor: KollabKit ================= */
+// One stand on the far side of the ring, plus a hoarding on the entry lane and one at the jhoola ground.
+const KK_URL='https://kollabkit.com/?utm_source=phatake-bazaar&utm_medium=game&utm_campaign=diwali-2026';
+const AD_ANG=Math.PI/2+SLOT*7.5;// the gap between Diya Ghar and Sivakasi Wale, by the path to the jhoolas
+const AD={name:'KollabKit',cat:'Bazaar sponsor · creator stall',type:'ad',pitch:1.05,views:{},
+  greet:[['Creators, brand deals chahiye? Creator Pro do hafte free!','क्रिएटर्स, ब्रांड डील्स चाहिए? क्रिएटर प्रो दो हफ़्ते फ़्री!'],
+    ['KollabKit: jahan creators ko brand deals milti hain.','कोलैबकिट: जहाँ क्रिएटर्स को ब्रांड डील्स मिलती हैं।']]};
+const KK_CREATORS=['A live media kit that updates itself, your own portfolio site, AI rate benchmarks, 9,800+ brands hiring now and AI-written pitches ready to send.',
+  'अपने-आप अपडेट होने वाला मीडिया किट, अपनी पोर्टफ़ोलियो वेबसाइट, AI रेट बेंचमार्क, अभी हायर कर रहे 9,800+ ब्रांड्स और भेजने को तैयार AI पिचेस।'];
+const KK_BRANDS=['Find creators with verified stats and past collabs. Barter, paid or UGC campaigns, fully managed by the KollabKit team.',
+  'वेरिफ़ाइड स्टैट्स और पिछले कोलैब्स वाले क्रिएटर्स पाइए। बार्टर, पेड या UGC कैंपेन, पूरी तरह KollabKit टीम संभालती है।'];
+function adMat(src,k=.82){const t=new THREE.TextureLoader().load(src);t.anisotropy=4;return new THREE.MeshBasicMaterial({map:t,color:new THREE.Color(k,k,k)});}
+function hoarding(src,x,z,ry,w,where){const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=ry;scene.add(g);const h=w*9/16,y0=1.5;
+  const fr=new THREE.Mesh(new THREE.BoxGeometry(w+.24,h+.24,.12),lam('#2a1650',{emissive:'#1a0a33'}));fr.position.set(0,y0+h/2,-.08);g.add(fr);
+  const pic=new THREE.Mesh(new THREE.PlaneGeometry(w,h),adMat(src));pic.position.set(0,y0+h/2,0);g.add(pic);
+  for(const px of[-w*.32,w*.32]){const leg=new THREE.Mesh(new THREE.CylinderGeometry(.07,.09,y0+.1,8),lam('#2a2230'));leg.position.set(px,(y0+.1)/2,-.12);g.add(leg);}
+  g.updateMatrixWorld();for(let i=0;i<=10;i++){const p=g.localToWorld(new V3(-w/2-.12+i*(w+.24)/10,y0+h+.14,.02));addBulb(p.x,p.y,p.z,275);}
+  const glow=glowSprite(w*1.1,0x9b5cff);glow.position.set(0,y0+h/2,-.4);glow.material.opacity=.35;g.add(glow);
+  if(!where)return;// display only: no tap, no hover
+  const hit=new THREE.Mesh(new THREE.BoxGeometry(w,h,.4),new THREE.MeshBasicMaterial({visible:false}));hit.position.set(0,y0+h/2,.1);hit.userData.ad=where;g.add(hit);clickables.push(hit);
+  AD.views[where]={pos:g.localToWorld(new V3(0,y0+h/2,w*.95)),look:g.localToWorld(new V3(0,y0+h/2,0))};}
+function buildAds(){
+  // the stand: same footprint and facing as a stall, slotted into the gap
+  const g=new THREE.Group();g.position.set(C.x+Math.cos(AD_ANG)*24.1,0,C.z+Math.sin(AD_ANG)*24.1);g.rotation.y=Math.atan2(-Math.cos(AD_ANG),-Math.sin(AD_ANG));scene.add(g);
+  const purple=lam('#5b21b6',{emissive:'#2a0f5a'}),dark=lam('#140b26',{emissive:'#0a0516'});
+  const add=(geo,mat,x,y,z)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);g.add(m);return m;};
+  add(new THREE.BoxGeometry(2.8,.12,1.7),dark,0,.06,0);
+  add(new THREE.BoxGeometry(2.5,3.5,.12),dark,0,1.75,-.66);
+  for(const sx of[-1.27,1.27])add(new THREE.BoxGeometry(.1,3.5,.16),purple,sx,1.75,-.62);
+  add(new THREE.PlaneGeometry(1.62,2.88),adMat('ads/kollabkit-offer-tall.jpg',.72),0,1.95,-.59);
+  add(new THREE.PlaneGeometry(2.7,1.52),adMat('ads/kollabkit-brand.jpg'),0,4.3,-.6);
+  add(new THREE.BoxGeometry(2.82,1.64,.08),purple,0,4.3,-.66);
+  add(new THREE.BoxGeometry(2.3,1,.62),purple,0,.5,.38);
+  const sign=canvasTex(1024,160,(c,w,h)=>{c.fillStyle='#1a0f2e';c.fillRect(0,0,w,h);c.fillStyle='#c4a6ff';c.font='800 60px Mukta, sans-serif';c.textAlign='center';c.textBaseline='middle';
+    c.fillText('KOLLABKIT · CREATOR PRO FREE FOR 2 WEEKS',w/2,h/2+4);});
+  add(new THREE.PlaneGeometry(2.24,.35),new THREE.MeshBasicMaterial({map:sign}),0,.62,.695);
+  const kp=person({col:'#7c3aed',pants:'#2b2140',plain:true,scale:1});kp.position.set(.82,0,-.25);kp.rotation.y=-.25;g.add(kp);AD.keeper=kp;
+  const glow=glowSprite(4.2,0x9b5cff);glow.position.set(0,2.4,-1.1);glow.material.opacity=.45;g.add(glow);
+  g.updateMatrixWorld();for(let i=0;i<=8;i++){const p=g.localToWorld(new V3(-1.41+i*.3525,5.15,-.6));addBulb(p.x,p.y,p.z,275);}
+  const hit=new THREE.Mesh(new THREE.BoxGeometry(2.8,5,1.8),new THREE.MeshBasicMaterial({visible:false}));hit.position.y=2.5;hit.userData.ad='stand';g.add(hit);clickables.push(hit);
+  const Lw=(x,y,z)=>g.localToWorld(new V3(x,y,z));
+  AD.front=Lw(0,0,2.2);AD.z=7;AD.views.stand={pos:Lw(.3,1.8,3.4),look:Lw(0,2.1,-.3)};
+  // hoardings: entry lane (the first thing past the start) and the back of the jhoola ground
+  hoarding('ads/kollabkit-offer-wide.jpg',6.2,-3.2,-.7,4.4,null);
+  hoarding('ads/kollabkit-brand.jpg',-13,-84.6,.35,6.4,'jhoola');}
+function openAd(where){const v=AD.views[where]||AD.views.stand;AD.dlgPos=v.pos;AD.dlgLook=v.look;openDialog(AD);}
 /* ================= brand slots ================= */
-// Which brand goes where comes from the admin page through brands.js. The code only knows where each slot stands
-// and how to draw it: an off slot draws nothing, an on slot with no live brand shows Diwali art.
+// Brand spots next to KollabKit's: which brand goes where comes from the admin page through brands.js. The code only knows
+// where each slot stands and how to draw it: an off slot draws nothing, an on slot with no live brand shows Diwali art.
 const standAt=k=>{const a=Math.PI/2+SLOT*k;return{x:C.x+Math.cos(a)*24.1,z:C.z+Math.sin(a)*24.1,ry:Math.atan2(-Math.cos(a),-Math.sin(a))};};
 const SLOT_DEFS={
-  'stall-ring':{kind:'premium_stall',k:7,at:standAt(7.5)},// between Diya Ghar and Sivakasi Wale, by the path to the jhoolas
-  'stall-ring-b':{kind:'premium_stall',k:10,at:standAt(10.5)},// the mirror gap across the north path
-  'hoarding-entry':{kind:'hoarding',at:{x:6.2,z:-3.2,ry:-.7},w:4.4},
-  'hoarding-entry-b':{kind:'hoarding',at:{x:-6.2,z:-3.2,ry:.7},w:4.4},
-  'hoarding-jhoola':{kind:'hoarding',at:{x:-13,z:-84.6,ry:.35},w:6.4}};
-const DEFAULT_ON=['stall-ring','hoarding-entry','hoarding-jhoola'];// shown with Diwali art when the list can't be fetched
+  'stall-ring-b':{kind:'premium_stall',k:10,at:standAt(10.5)},// across the north path from KollabKit's stand
+  'hoarding-entry-b':{kind:'hoarding',at:{x:-6.2,z:-3.2,ry:.7},w:4.4}};// entry lane, facing KollabKit's hoarding
+const DEFAULT_ON=[];// with no list to go on, only KollabKit shows
 const GAP_LAMPS={},BUILT={};
 const FEST={};
 function festiveTex(part){if(FEST[part])return FEST[part];const wide=part==='wide';
@@ -1146,7 +1189,7 @@ function setArt(m,url,part){const tok=++m.userData.tok;if(m.map&&m.map!==FEST[pa
 const SBULB=new THREE.SphereGeometry(.045,6,4);
 function slotBulbs(g,pts){const m=basic('#ffd27a');for(const p of pts){const b=new THREE.Mesh(SBULB,m);b.position.copy(p);g.add(b);}}
 function slotGroup(id,at){const g=new THREE.Group();g.position.set(at.x,0,at.z);g.rotation.y=at.ry;g.userData.slot=id;scene.add(g);return g;}
-function hitBox(g,id,w,h,d,x,y,z){const hit=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshBasicMaterial({visible:false}));hit.position.set(x,y,z);hit.userData.ad=id;g.add(hit);return hit;}
+function hitBox(g,id,w,h,d,x,y,z){const hit=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshBasicMaterial({visible:false}));hit.position.set(x,y,z);hit.userData.brandSlot=id;g.add(hit);return hit;}
 function buildHoarding(id,d){const g=slotGroup(id,d.at),w=d.w,h=w*9/16,y0=1.5;
   const fr=new THREE.Mesh(new THREE.BoxGeometry(w+.24,h+.24,.12),lam('#2a1650',{emissive:'#1a0a33'}));fr.position.set(0,y0+h/2,-.08);g.add(fr);
   const pic=new THREE.Mesh(new THREE.PlaneGeometry(w,h),artMat('wide'));pic.position.set(0,y0+h/2,0);g.add(pic);
@@ -1155,7 +1198,7 @@ function buildHoarding(id,d){const g=slotGroup(id,d.at),w=d.w,h=w*9/16,y0=1.5;
   const glow=glowSprite(w*1.1,0x9b5cff);glow.position.set(0,y0+h/2,-.4);glow.material.opacity=.35;g.add(glow);
   const hit=hitBox(g,id,w,h,.4,0,y0+h/2,.1);g.updateMatrixWorld();const Lw=(x,y,z)=>g.localToWorld(new V3(x,y,z));
   return {id,g,hit,arts:{wide:pic.material},center:Lw(0,y0+h/2,0),stand:Lw(0,0,w*.9+1),
-    sponsor:{type:'ad',cat:'Sponsored',name:'',pitch:1,greet:[],qa:[],campaign:null,dlgPos:Lw(0,y0+h/2,w*.95),dlgLook:Lw(0,y0+h/2,0)}};}
+    sponsor:{type:'brand',cat:'Sponsored',name:'',pitch:1,greet:[],qa:[],campaign:null,dlgPos:Lw(0,y0+h/2,w*.95),dlgLook:Lw(0,y0+h/2,0)}};}
 // the stand: same footprint and facing as a stall, slotted into a gap in the ring
 function buildStand(id,d){const g=slotGroup(id,d.at);
   const purple=lam('#5b21b6',{emissive:'#2a0f5a'}),dark=lam('#140b26',{emissive:'#0a0516'});
@@ -1174,7 +1217,7 @@ function buildStand(id,d){const g=slotGroup(id,d.at);
   slotBulbs(g,Array.from({length:9},(_,i)=>new V3(-1.41+i*.3525,5.15,-.6)));
   const hit=hitBox(g,id,2.8,5,1.8,0,2.5,0);g.updateMatrixWorld();const Lw=(x,y,z)=>g.localToWorld(new V3(x,y,z));
   return {id,g,hit,arts:{wide:head.material,tall:tall.material},sign:{c:sc,t:st},center:Lw(0,2.4,-.6),stand:Lw(0,0,4.5),
-    sponsor:{type:'ad',cat:'Bazaar sponsor',name:'',pitch:1.05,greet:[],qa:[],campaign:null,keeper:kp,front:Lw(0,0,2.2),z:d.k,dlgPos:Lw(.3,1.8,3.4),dlgLook:Lw(0,2.1,-.3)}};}
+    sponsor:{type:'brand',cat:'Bazaar sponsor',name:'',pitch:1.05,greet:[],qa:[],campaign:null,keeper:kp,front:Lw(0,0,2.2),z:d.k,dlgPos:Lw(.3,1.8,3.4),dlgLook:Lw(0,2.1,-.3)}};}
 function drawSign(b,text){const c=b.sign.c,g=c.getContext('2d');let fs=60;g.fillStyle='#1a0f2e';g.fillRect(0,0,c.width,c.height);
   g.fillStyle='#c4a6ff';g.textAlign='center';g.textBaseline='middle';g.font=`800 ${fs}px Mukta, sans-serif`;
   while(fs>28&&g.measureText(text).width>c.width-48){fs-=4;g.font=`800 ${fs}px Mukta, sans-serif`;}g.fillText(text,c.width/2,c.height/2+4);b.sign.t.needsUpdate=true;}
@@ -1655,7 +1698,7 @@ function setQuote(line){const q=$('#dlgQuote');q.textContent='"'+line[0]+'"';con
 function openDialog(s){
   if(GAME.on||CAM.ride)return;cancelGoto();unlockMouse();DLG.s=s;DLG.to=null;closeSheets();hideTip();
   $('#dlgCat').textContent=s.cat;$('#dlgTitle').textContent=s.name;
-  $('#dlgFoot').textContent=s.type==='ad'?`Sponsored by ${s.name}. The link opens in a new tab.`:'Pretend money only. Nothing here is sold for real.';$('#dialog').hidden=false;$('#prompt').hidden=true;
+  $('#dlgFoot').textContent=s.type==='ad'?'Sponsored by KollabKit. The link opens kollabkit.com in a new tab.':s.type==='brand'?`Sponsored by ${s.name}. The link opens in a new tab.`:'Pretend money only. Nothing here is sold for real.';$('#dialog').hidden=false;$('#prompt').hidden=true;
   focusOn(s.dlgPos,s.dlgLook);
   const g=s.greet&&s.greet.length?pick(s.greet):null;if(g){talk(s,g,{vol:1});setQuote(g);}else $('#dlgQuote').textContent='';renderChoices();}
 function closeDialog(){if(!DLG.s)return;DLG.s=null;DLG.list=null;$('#dialog').hidden=true;unfocus();}
@@ -1702,6 +1745,10 @@ function renderChoices(){
     list.push(choice('',()=>{buy('diya',s,to);talk(s,L.diyaBuy);},{html:'Mitti ka diya · ₹10'}));
     list.push(choice('',()=>{buy('rangoli',s,to);talk(s,L.rangoliBuy);},{html:'Rangoli kit · ₹30'}));
   } else if(s.type==='ad'){
+    list.push(choice('',()=>{try{window.open(KK_URL,'_blank','noopener');}catch(e){}toast('Opening kollabkit.com in a new tab.');},{html:'Claim Creator Pro · free for 2 weeks ↗'}));
+    list.push(choice('What do creators get?',()=>setQuote(KK_CREATORS)));
+    list.push(choice("I'm a brand",()=>setQuote(KK_BRANDS)));
+  } else if(s.type==='brand'){
     list.push(choice(`Visit ${s.name} ↗`,()=>{if(window.BRANDS&&BRANDS.open(s.campaign))toast(`Opening ${s.name} in a new tab.`);}));
     for(const x of s.qa)list.push(choice(x.q[0],()=>setQuote(x.a)));
   } else if(s.type==='spin'){
@@ -1885,6 +1932,7 @@ function interactables(){const list=[];
   list.push({pos:new V3(BW.x,0,BW.z),r:2.6,name:'Balloon-wala',verb:'Talk',act:openBW});
   list.push({pos:new V3(DHOL.x,0,DHOL.z),r:3.5,name:'Dhol-wala',verb:'Faster beat',act:dholFast});
   for(const R of RIDES)list.push({pos:new V3(R.entry.x,0,R.entry.z),r:3.4,name:R.name,verb:'Ride',act:()=>startRide(R)});
+  list.push({pos:AD.front,r:3.2,name:'KollabKit',verb:'Talk',act:()=>openAd('stand')});
   for(const id in BUILT){const b=BUILT[id],sp=b.sponsor;if(b.g.visible&&sp.campaign&&sp.front)list.push({pos:sp.front,r:3.2,name:sp.name,verb:'Talk',act:()=>openSponsor(sp)});}
   return list;}
 function updPrompt(){
@@ -1950,7 +1998,8 @@ function interact(cx,cy){
   if(u.keeper||u.balloon){const s=u.keeper||u.balloon;if(dist>5.5&&!DLG.s){walkTo(s.front.x,s.front.z,1.1,()=>openDialog(s),`Walking to ${s.name}…`);return;}if(DLG.s!==s)openDialog(s);return;}
   if(u.bw){if(dist>4&&!DLG.s){const a=new V3(player.x-BW.x,0,player.z-BW.z);if(a.lengthSq()<.01)a.set(0,0,1);a.setLength(1.7);walkTo(BW.x+a.x,BW.z+a.z,.6,openBW,'Walking to the balloon-wala…');return;}if(DLG.s!==BWS)openBW();return;}
   if(u.dhol){if(dist>6){walkTo(DHOL.x-1.3,DHOL.z+1.3,.8,dholFast,'Walking to the dhol-wala…');return;}dholFast();return;}
-  if(u.ad){tapSlot(u.ad,dist);return;}
+  if(u.ad){if(u.ad==='stand'&&dist>5.5&&!DLG.s){walkTo(AD.front.x,AD.front.z,1.1,()=>openAd('stand'),'Walking to the KollabKit stand…');return;}openAd(u.ad);return;}
+  if(u.brandSlot){tapSlot(u.brandSlot,dist);return;}
   if(u.wheel||u.ride!==undefined){const R=RIDES[u.wheel?0:u.ride];if(Math.hypot(R.entry.x-player.x,R.entry.z-player.z)>4){walkTo(R.entry.x,R.entry.z,1.1,()=>startRide(R),`Walking to the ${R.name}…`);return;}startRide(R);return;}
   if(DLG.s)return;
   if(u.diya){const d=u.diya;if(d.lit){if(S.sel==='phuljhadi'&&!handSp&&S.bag.phuljhadi)lightSparkler();else walkTo(d.x,d.z,1.4);return;}
@@ -2406,6 +2455,7 @@ function frame(now){
   for(const s of STALLS){if(s.spinners)for(const w of s.spinners)w.rotation.z+=dt*(2.5+Math.sin(T+w.position.x)*1.5);if(s.keeper){keeperAnim(s,dt);if(s.bubble){s.bubbleT-=dt;if(s.bubbleT<=0){s.keeper.remove(s.bubble);s.bubble=null;}}}
     if(s.steam&&Math.random()<dt*1.5)puff(s.steam.x,s.steam.y,s.steam.z,1,.1,.12);
     if(s.balloons)for(const b of s.balloons)b.position.y=b.userData.y0+Math.sin(T*1.5+b.userData.p)*.025;}
+  if(AD.keeper){keeperAnim(AD,dt);if(AD.bubble){AD.bubbleT-=dt;if(AD.bubbleT<=0){AD.keeper.remove(AD.bubble);AD.bubble=null;}}}
   slotTick(dt,now);
   if(BWS.bubble){BWS.bubbleT-=dt;if(BWS.bubbleT<=0){BW.g.remove(BWS.bubble);BWS.bubble=null;}}
   if(GAME.on&&GAME.type==='spin'&&GAME.spin){const st=GAME.s,sp=GAME.spin;const prev=st.spinAng;sp.v=Math.max(0,sp.v-(.9+sp.v*.35)*dt);st.spinAng+=sp.v*dt;st.wheel.rotation.z=st.spinAng;
@@ -2434,7 +2484,7 @@ async function boot(){
   document.body.classList.add('pre');
   try{await Promise.race([Promise.all([document.fonts.load('56px "Yatra One"'),document.fonts.load('600 20px Mukta'),document.fonts.load('800 28px Mukta')]),new Promise(r=>setTimeout(r,2500))]);}catch(e){}
   STALLS.forEach((s,i)=>{const k=i%2===0?i/2+1:17-(i-1)/2;s.ang=Math.PI/2+SLOT*k;s.z=i*1.7;});
-  buildGround();buildGate();buildEntry();STALLS.forEach(buildStall);buildDiyas();buildPlaza();buildPools();buildCity();buildKandils();buildPeople();buildBalloonWala();buildDhol();buildWheel();buildRides();
+  buildGround();buildGate();buildEntry();STALLS.forEach(buildStall);buildDiyas();buildPlaza();buildPools();buildCity();buildKandils();buildPeople();buildBalloonWala();buildDhol();buildWheel();buildRides();buildAds();
   bulbs.count=bulbData.length;for(let i=0;i<bulbData.length;i++)bulbs.setColorAt(i,_c.setHSL(bulbData[i].h/360,1,.55));scene.add(bulbs);
   marigold.count=mgN;scene.add(marigold);flags.count=flN;scene.add(flags);
   IA=interactables();buildFPP();applyLook();
@@ -2448,6 +2498,7 @@ async function boot(){
     goto(id){const b=BUILT[id],p=b?b.stand:new V3(C.x,0,C.z+2),t=b?b.center:new V3(C.x,0,C.z+30);cancelGoto();
       player.x=p.x;player.z=p.z;player.vx=player.vz=0;player.yaw=player.tyaw=Math.atan2(p.x-t.x,p.z-t.z);player.pitch=player.tpitch=.05;},
     tap(id){tapSlot(id,0);},
+    kollabkit:()=>({stand:!!AD.keeper,boards:Object.keys(AD.views).sort()}),tapKK(where){openAd(where);},
     player:()=>[player.x,player.z]};
   resize();renderCoins();S.sel=ORDER.find(k=>S.bag[k]>0)||null;renderTray();renderInvite();
   burst(-6,20,-12,{kind:'peony',hue:42});burst(8,26,-22,{kind:'ring',hue:330});burst(1,18,-6,{kind:'willow'});

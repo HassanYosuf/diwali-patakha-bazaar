@@ -7,8 +7,8 @@ LOCAL_ONLY = True
 
 
 def seed_stats():
-    a = campaign("Acme, Tea", "hoarding-entry", start=-12, end=5)
-    b = campaign("Bolt", "hoarding-jhoola", start=-12, end=5)
+    a = campaign("Acme, Tea", "hoarding-entry-b", start=-12, end=5)
+    b = campaign("Bolt", "stall-ring-b", start=-12, end=5)
     svc("POST", "/rest/v1/stats_daily", [
         {"campaign_id": a["id"], "day": ist_today(-1), "views": 10, "clicks": 2},
         {"campaign_id": a["id"], "day": ist_today(-2), "views": 5, "clicks": 0},
@@ -48,9 +48,9 @@ def test_the_csv_has_one_row_per_campaign_day(browser):
     assert text.splitlines()[0] == "date,brand,slot,views,clicks,click_rate"
     got = list(csv.reader(io.StringIO(text)))[1:]
     assert got == [
-        [ist_today(-2), "Acme, Tea", "hoarding-entry", "5", "0", "0.0%"],
-        [ist_today(-1), "Acme, Tea", "hoarding-entry", "10", "2", "20.0%"],
-        [ist_today(-1), "Bolt", "hoarding-jhoola", "0", "0", ""],
+        [ist_today(-2), "Acme, Tea", "hoarding-entry-b", "5", "0", "0.0%"],
+        [ist_today(-1), "Acme, Tea", "hoarding-entry-b", "10", "2", "20.0%"],
+        [ist_today(-1), "Bolt", "stall-ring-b", "0", "0", ""],
     ], got
 
 
@@ -91,7 +91,7 @@ def test_an_enquiry_becomes_a_campaign(browser):
     page.get_by_role("tab", name="Enquiries").click()
     page.locator(f"[data-enquiry='{e['id']}']").get_by_role("button", name="Create campaign").click()
     assert page.locator("#cBrand").input_value() == "Chai Point"
-    page.locator("#cSlot").select_option("hoarding-entry")
+    page.locator("#cSlot").select_option("hoarding-entry-b")
     page.locator("#cLink").fill("https://chai.example/")
     page.locator("#cWide").set_input_files(img("w-1920x1080.jpg", 1920, 1080))
     page.get_by_role("button", name="Save campaign").click()

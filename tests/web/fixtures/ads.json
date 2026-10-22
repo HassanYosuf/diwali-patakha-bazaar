@@ -1,30 +1,63 @@
 {
   "slots": [
-    { "id": "hoarding-entry", "kind": "hoarding" },
-    { "id": "hoarding-jhoola", "kind": "hoarding" },
-    { "id": "stall-ring", "kind": "premium_stall" }
+    {
+      "id": "hoarding-entry-b",
+      "kind": "hoarding"
+    },
+    {
+      "id": "stall-ring-b",
+      "kind": "premium_stall"
+    }
   ],
   "campaigns": [
     {
       "id": "00000000-0000-0000-0000-0000000000a1",
       "brand": "Acme Tea",
-      "slot_id": "hoarding-entry",
-      "link": "https://acme.example/?utm_source=phatake-bazaar&utm_medium=game&utm_campaign=hoarding-entry",
-      "art": { "wide": "https://cdn.test.invalid/art-wide.jpg" },
+      "slot_id": "hoarding-entry-b",
+      "link": "https://acme.example/?utm_source=phatake-bazaar&utm_medium=game&utm_campaign=hoarding-entry-b",
+      "art": {
+        "wide": "https://cdn.test.invalid/art-wide.jpg"
+      },
       "lines": null,
       "share": 1
     },
     {
       "id": "00000000-0000-0000-0000-0000000000b1",
       "brand": "Bolt Sweets",
-      "slot_id": "stall-ring",
-      "link": "https://bolt.example/?utm_source=phatake-bazaar&utm_medium=game&utm_campaign=stall-ring",
-      "art": { "wide": "https://cdn.test.invalid/art-wide.jpg", "tall": "https://cdn.test.invalid/art-tall.jpg" },
+      "slot_id": "stall-ring-b",
+      "link": "https://bolt.example/?utm_source=phatake-bazaar&utm_medium=game&utm_campaign=stall-ring-b",
+      "art": {
+        "wide": "https://cdn.test.invalid/art-wide.jpg",
+        "tall": "https://cdn.test.invalid/art-tall.jpg"
+      },
       "lines": {
-        "greet": [["Bolt ki mithai, seedha halwai se!", "बोल्ट की मिठाई, सीधा हलवाई से!"]],
+        "greet": [
+          [
+            "Bolt ki mithai, seedha halwai se!",
+            "बोल्ट की मिठाई, सीधा हलवाई से!"
+          ]
+        ],
         "qa": [
-          { "q": ["What's fresh today?", "आज ताज़ा क्या है?"], "a": ["Kaju katli and motichoor, made this morning.", "काजू कतली और मोतीचूर, आज सुबह बने।"] },
-          { "q": ["Do you deliver?", "क्या आप डिलीवरी करते हैं?"], "a": ["Across Delhi NCR, same day.", "पूरे दिल्ली एनसीआर में, उसी दिन।"] }
+          {
+            "q": [
+              "What's fresh today?",
+              "आज ताज़ा क्या है?"
+            ],
+            "a": [
+              "Kaju katli and motichoor, made this morning.",
+              "काजू कतली और मोतीचूर, आज सुबह बने।"
+            ]
+          },
+          {
+            "q": [
+              "Do you deliver?",
+              "क्या आप डिलीवरी करते हैं?"
+            ],
+            "a": [
+              "Across Delhi NCR, same day.",
+              "पूरे दिल्ली एनसीआर में, उसी दिन।"
+            ]
+          }
         ]
       },
       "share": 1

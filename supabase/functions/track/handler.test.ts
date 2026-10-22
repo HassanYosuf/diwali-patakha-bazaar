@@ -105,6 +105,22 @@ Deno.test("localhost on any port is allowed", async () => {
   assertEquals((await handleTrack(post({ visit: "visit-abc123", events: [{ c: C1, t: "v" }] }, "http://localhost:8765"), db, today)).status, 204);
 });
 
+Deno.test("this project's Vercel preview links are allowed, look-alikes are not", async () => {
+  const prev = Deno.env.get("ALLOWED_ORIGINS")!;
+  Deno.env.set("ALLOWED_ORIGINS", prev + ",https://diwali-patakha-bazaar-*-hassanyosufs-projects.vercel.app");
+  try {
+    const status = async (origin: string) =>
+      (await handleTrack(post({ visit: "visit-abc123", events: [{ c: C1, t: "v" }] }, origin), fakeDb(), today)).status;
+    assertEquals(await status("https://diwali-patakha-bazaar-git-brand-placements-hassanyosufs-projects.vercel.app"), 204);
+    assertEquals(await status("https://diwali-patakha-bazaar-k3j9x2a1q-hassanyosufs-projects.vercel.app"), 204);
+    assertEquals(await status("https://evil-hassanyosufs-projects.vercel.app"), 403);
+    assertEquals(await status("https://diwali-patakha-bazaar-a.evil.com-hassanyosufs-projects.vercel.app"), 403);
+    assertEquals(await status("http://diwali-patakha-bazaar-git-x-hassanyosufs-projects.vercel.app"), 403);
+  } finally {
+    Deno.env.set("ALLOWED_ORIGINS", prev);
+  }
+});
+
 Deno.test("GET is not allowed; OPTIONS answers CORS for the site", async () => {
   assertEquals((await handleTrack(new Request("http://fn/track", { headers: { origin: SITE } }), fakeDb(), today)).status, 405);
   const res = await handleTrack(new Request("http://fn/track", { method: "OPTIONS", headers: { origin: SITE } }), fakeDb(), today);
