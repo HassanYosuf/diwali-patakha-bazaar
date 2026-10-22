@@ -364,7 +364,7 @@ button.pill{cursor:pointer;}button.pill:hover{border-color:rgba(255,182,39,.55);
       <dt>Space</dt><dd>Hop</dd>
       <dt>Double-click or L</dt><dd>Lock the mouse for free look. Esc releases it</dd>
       <dt>E or tap the prompt</dt><dd>Talk to a shopkeeper, play a game, ride a jhoola</dd>
-      <dt>Jhoola ground</dt><dd>Behind the giant wheel: Ghoda Gaadi, Columbus Naav and Udan Khatola. Friends on a ride sit right next to you</dd>
+      <dt>Jhoola ground</dt><dd>Behind the giant wheel: Ghoda Gaadi, Columbus Naav, Udan Khatola and Maut ka Kuan, where you watch bikes and a car ride the wall from the rim. Friends on a ride sit right next to you</dd>
       <dt>Shift / Run</dt><dd>Move a little faster</dd>
       <dt>1 – 9</dt><dd>Pick a cracker from your bag, or a choice while talking</dd>
       <dt>Tap a box</dt><dd>Buy straight off any counter</dd>
@@ -802,9 +802,9 @@ function buildGround(){
   const edge=new THREE.Mesh(new THREE.RingGeometry(RING.path-.18,RING.path,160),lam('#c9a36a',{emissive:'#2a1e08'}));edge.rotation.x=-Math.PI/2;edge.position.set(C.x,.016,C.z);scene.add(edge);
   for(const [z0,z1,hw] of [[C.z+RING.walk-1,ENTRY.z1+1,ENTRY.hx+.6],[NORTH.z0-1,C.z-RING.walk+1,NORTH.hx+.4]]){const L=z1-z0;const m=new THREE.Mesh(new THREE.PlaneGeometry(hw*2,L),bmat.clone());m.material.map=brick.clone();m.material.map.repeat.set(hw*2/2,L/2);m.material.map.needsUpdate=true;
     m.rotation.x=-Math.PI/2;m.position.set(0,.013,(z0+z1)/2);m.userData.ground=true;scene.add(m);clickables.push(m);}
-  const rg=new THREE.Mesh(new THREE.CircleGeometry(8,64),new THREE.MeshLambertMaterial({map:rangoliTex,transparent:true}));rg.rotation.x=-Math.PI/2;rg.position.set(C.x,.02,C.z);scene.add(rg);rg.userData.ground=true;clickables.push(rg);
+  const rg=new THREE.Mesh(new THREE.CircleGeometry(10,64),new THREE.MeshLambertMaterial({map:rangoliTex,transparent:true}));rg.rotation.x=-Math.PI/2;rg.position.set(C.x,.02,C.z);scene.add(rg);rg.userData.ground=true;clickables.push(rg);
   // soft warm wash over the maidan, fading out before the stalls
-  const wash=new THREE.PointLight(0xffc78a,.9,52,1.2);wash.position.set(C.x,10,C.z);scene.add(wash);
+  const wash=new THREE.PointLight(0xffc78a,.9,65,1.2);wash.position.set(C.x,10,C.z);scene.add(wash);
 }
 // painted light pools: warm glow on the ground under every lamp, stall and the pole, on two planes (lane and ring; corridor and jhoola ground)
 function buildPools(){
@@ -813,9 +813,10 @@ function buildPools(){
     const m=new THREE.Mesh(new THREE.PlaneGeometry(S0,S0),new THREE.MeshBasicMaterial({map:tex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,opacity:.7,fog:false}));
     m.rotation.x=-Math.PI/2;m.position.set(cx,.035,cz);scene.add(m);};
   const lamps=pool=>{for(const lp of LAMPS)pool(lp.x,lp.z,3.2,'255,214,140',.55);};
-  plane(130,0,-40,pool=>{for(const s of STALLS)pool(s.front.x,s.front.z,4.6,'255,170,90',.5);lamps(pool);
+  const rz0=ENTRY.z1+2,rz1=C.z-RING.pathOut-2,jz0=NORTH.z0+8,jz1=JG.z0-2;
+  plane(Math.max(rz0-rz1,2*RING.pathOut+4),0,(rz0+rz1)/2,pool=>{for(const s of STALLS)pool(s.front.x,s.front.z,4.6,'255,170,90',.5);lamps(pool);
     pool(C.x,C.z,12,'255,190,110',.32);for(let z=ENTRY.z1-1;z>C.z+RING.walk;z-=3)pool(0,z,3.6,'255,190,120',.35);});
-  plane(140,0,-170,pool=>{lamps(pool);pool(WHEEL.x,WHEEL.z+3,7,'255,120,180',.3);for(const k in LY.RIDES){const r=LY.RIDES[k];pool(r.x,r.z,9,'255,150,200',.22);}});}
+  plane(Math.max(jz0-jz1,JG.x1-JG.x0+4),0,(jz0+jz1)/2,pool=>{lamps(pool);pool(WHEEL.x,WHEEL.z+3,7,'255,120,180',.3);for(const k in LY.RIDES){const r=LY.RIDES[k];pool(r.x,r.z,9,'255,150,200',.22);}});}
 function buildEntry(){
   const w=ENTRY.hx+1,z0=ENTRY.z1-1;
   for(let z=z0;z>=C.z+RING.walk+.5;z-=3)stringLights(new V3(-w,4.6,z),new V3(w,4.6,z),1.2,28,[42,350,160,48,200,12,280]);
@@ -832,7 +833,7 @@ function lampPost(x,z,loose){const g=new THREE.Group();g.position.set(x,0,z);con
   cone.position.y=1.65;g.add(cone);scene.add(g);if(!loose)LAMPS.push({x,z});return g;}
 function buildPlaza(){
   // tall central pole wrapped in marigold, crowned with a big kandil
-  const H=20;const pole=new THREE.Mesh(new THREE.CylinderGeometry(.16,.26,H,12),new THREE.MeshLambertMaterial({map:canvasTex(64,512,(g,w,h)=>{for(let i=0;i<32;i++){g.fillStyle=i%2?'#f3e6cf':'#c4283d';g.save();g.translate(0,i*16);g.transform(1,.4,0,1,0,0);g.fillRect(-20,0,w+40,16);g.restore();}})}));
+  const H=24;const pole=new THREE.Mesh(new THREE.CylinderGeometry(.16,.26,H,12),new THREE.MeshLambertMaterial({map:canvasTex(64,512,(g,w,h)=>{for(let i=0;i<32;i++){g.fillStyle=i%2?'#f3e6cf':'#c4283d';g.save();g.translate(0,i*16);g.transform(1,.4,0,1,0,0);g.fillRect(-20,0,w+40,16);g.restore();}})}));
   pole.position.set(C.x,H/2,C.z);scene.add(pole);
   for(let i=0;i<120&&mgN<MG_MAX;i++){const a=i*.42,y=1+i*.1;_m.makeTranslation(C.x+Math.cos(a)*.3,y,C.z+Math.sin(a)*.3);marigold.setMatrixAt(mgN,_m);marigold.setColorAt(mgN,_c.set(i%4?'#ff8c12':'#ffd23a'));mgN++;}
   const crown=new THREE.Group();crown.position.set(C.x,H+.6,C.z);crown.scale.setScalar(2.4);scene.add(crown);
@@ -842,13 +843,13 @@ function buildPlaza(){
   const top=new V3(C.x,H-.4,C.z);
   // canopy: string lights and bunting fanning out to every stall, kandils hanging along them
   const hues=[42,350,160,48,200,12,280,30];
-  STALLS.forEach((s,i)=>{const a=s.group.localToWorld(new V3(0,3.9,1.7));stringLights(top,a,3,40,hues);
-    bunting(new V3(C.x,H-2.6,C.z),s.group.localToWorld(new V3(0,3.2,1.9)),2.6);
-    const t=.58;kandil(top.x+(a.x-top.x)*t,top.y+(a.y-top.y)*t-Math.sin(Math.PI*t)*3-.9,top.z+(a.z-top.z)*t,['#ff4f7e','#ffb627','#22c7b8','#9b7bff','#ff7a1a','#4ade80'][i%6]);});
-  for(let k=0;k<LY.SLOTS;k++){const a=Math.PI/2+SLOT*(k+.5),r=RING.walk+.7;lampPost(C.x+Math.cos(a)*r,C.z+Math.sin(a)*r);}
+  STALLS.forEach((s,i)=>{const a=s.group.localToWorld(new V3(0,3.9,1.7));stringLights(top,a,4.5,50,hues);
+    bunting(new V3(C.x,H-2.6,C.z),s.group.localToWorld(new V3(0,3.2,1.9)),3.8);
+    const t=.58;kandil(top.x+(a.x-top.x)*t,top.y+(a.y-top.y)*t-Math.sin(Math.PI*t)*4.5-.9,top.z+(a.z-top.z)*t,['#ff4f7e','#ffb627','#22c7b8','#9b7bff','#ff7a1a','#4ade80'][i%6]);});
+  for(let k=0;k<LY.SLOTS;k++)for(const f of[1/3,2/3]){const a=Math.PI/2+SLOT*(k+f),r=RING.walk+.7;lampPost(C.x+Math.cos(a)*r,C.z+Math.sin(a)*r);}
   // ring of string lights linking the lamp posts
   for(let i=0;i<LAMPS.length;i++){const a=LAMPS[i],b=LAMPS[(i+1)%LAMPS.length];const pa=new V3(a.x,3.3,a.z),pb=new V3(b.x,3.3,b.z);if(pa.distanceTo(pb)<12)stringLights(pa,pb,.8,16,[42,48,30]);}
-  const hint=textSprite('Maidan · burst crackers here',{size:.5});hint.position.set(C.x,3.6,C.z+12);scene.add(hint);
+  const hint=textSprite('Maidan · burst crackers here',{size:.5});hint.position.set(C.x,3.6,C.z+15);scene.add(hint);
   const hint2=textSprite('Parikrama path · stalls all around',{size:.38,col:'#f6ecd9'});hint2.position.set(0,3.4,C.z+RING.walk+.8);scene.add(hint2);
 }
 const diyas=[];const diyaGeo=new THREE.CylinderGeometry(.11,.07,.07,12);
@@ -858,18 +859,19 @@ function addDiya(x,z,lit){
   const hit=new THREE.Mesh(new THREE.SphereGeometry(.35,6,5),new THREE.MeshBasicMaterial({visible:false}));hit.position.set(x,.15,z);scene.add(hit);
   const d={x,z,lit,mesh:m,fl,p:Math.random()*9};hit.userData.diya=d;clickables.push(hit);diyas.push(d);fl.visible=lit;}
 function buildDiyas(){
-  for(let i=0;i<96;i++){const a=i/96*Math.PI*2;addDiya(C.x+Math.cos(a)*(RING.path-.35),C.z+Math.sin(a)*(RING.path-.35),Math.random()<.65);}
-  for(let i=0;i<24;i++){const a=i/24*Math.PI*2;addDiya(C.x+Math.cos(a)*8,C.z+Math.sin(a)*8,Math.random()<.75);}
+  for(let i=0;i<120;i++){const a=i/120*Math.PI*2;addDiya(C.x+Math.cos(a)*(RING.path-.35),C.z+Math.sin(a)*(RING.path-.35),Math.random()<.65);}
+  for(let i=0;i<28;i++){const a=i/28*Math.PI*2;addDiya(C.x+Math.cos(a)*10,C.z+Math.sin(a)*10,Math.random()<.75);}
   const dx=ENTRY.hx+.4;for(let z=ENTRY.z1-1;z>C.z+RING.walk;z-=2.2){addDiya(-dx,z,Math.random()<.7);addDiya(dx,z-1.1,Math.random()<.7);}}
 function buildCity(){
   const mat=new THREE.MeshLambertMaterial({color:'#1a1230',emissive:'#ffffff',emissiveMap:winTex,emissiveIntensity:.75});
   const addB=(x,z,w,d,h)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,h/2,z);m.lookAt(C.x,h/2,C.z);scene.add(m);
     if(Math.random()<.5){const n=Math.round(w*2);for(let j=0;j<=n;j++)addBulb(x-w/2+j*w/n,h+.05,z,pick([42,48,350]));}};
   // lane-side rows (gaps at the two hoardings), a ring round the stalls, rows beside and behind the jhoola ground
-  for(const sd of[-1,1])for(let z=18;z>-12;z-=rand(5,7))if(!(z<2&&z>-10))addB(sd*rand(14,18),z,rand(4,6),rand(4,6),rand(6,13));
-  for(let i=0;i<72;i++){const a=i/72*Math.PI*2;const r=rand(72,95);const x=C.x+Math.cos(a)*r,z=C.z+Math.sin(a)*r;if(z>C.z+50&&Math.abs(x)<20)continue;if(z<C.z-40&&Math.abs(x)<75)continue;addB(x,z,rand(6,10),rand(6,10),rand(9,24));}
-  for(const sd of[-1,1])for(let z=JG.z1+4;z>JG.z0-4;z-=rand(8,12))addB(sd*rand(80,95),z,rand(6,10),rand(6,10),rand(9,22));
-  for(let x=-75;x<=75;x+=rand(8,12))addB(x,rand(-238,-232),rand(6,9),rand(6,9),rand(10,24));
+  const lx=ENTRY.hx+9,jx=JG.x1+12;
+  for(const sd of[-1,1])for(let z=18;z>-12;z-=rand(5,7))if(!(z<2&&z>-10))addB(sd*rand(lx,lx+4),z,rand(4,6),rand(4,6),rand(6,13));
+  for(let i=0;i<84;i++){const a=i/84*Math.PI*2;const r=rand(RING.stall+24,RING.stall+48);const x=C.x+Math.cos(a)*r,z=C.z+Math.sin(a)*r;if(z>-30&&Math.abs(x)<lx+6)continue;if(z<JG.z1+6&&Math.abs(x)<jx)continue;addB(x,z,rand(6,10),rand(6,10),rand(9,24));}
+  for(const sd of[-1,1])for(let z=JG.z1+4;z>JG.z0-4;z-=rand(8,12))addB(sd*rand(jx,jx+15),z,rand(6,10),rand(6,10),rand(9,22));
+  for(let x=JG.x0-6;x<=JG.x1+6;x+=rand(8,12))addB(x,rand(JG.z0-19,JG.z0-13),rand(6,9),rand(6,9),rand(10,24));
   // twinkling stars
   const sg=new THREE.BufferGeometry();const sp=[],ph=[],sz=[];for(let i=0;i<2200;i++){const th=Math.random()*Math.PI*2,pp=rand(.08,1.45);sp.push(Math.cos(th)*Math.cos(pp)*420,Math.sin(pp)*420,Math.sin(th)*Math.cos(pp)*420);ph.push(Math.random()*6.28);sz.push(rand(.8,2.4));}
   sg.setAttribute('position',new THREE.Float32BufferAttribute(sp,3));sg.setAttribute('ph',new THREE.Float32BufferAttribute(ph,1));sg.setAttribute('sz',new THREE.Float32BufferAttribute(sz,1));
@@ -959,7 +961,7 @@ function buildPeople(){
     NPCS.push(n);}
   // each kid circles on its own ring, all the same way round, so they never run into each other
   const kd=Math.random()<.5?-1:1;
-  for(let i=0;i<4;i++){const g=person({kid:true});NPCS.push({g,kid:true,ang:i/4*Math.PI*2,r:12+i*1.2,sp:rand(.25,.4)*kd,ph:Math.random()*6});}
+  for(let i=0;i<4;i++){const g=person({kid:true});NPCS.push({g,kid:true,ang:i/4*Math.PI*2,r:15+i*1.5,sp:rand(.25,.4)*kd,ph:Math.random()*6});}
 }
 const BW={x:LY.BW.x,z:LY.BW.z,g:null,balloons:[]};
 function buildBalloonWala(){const g=person({col:'#f3e6cf',plain:true});g.position.set(BW.x,0,BW.z);g.rotation.y=-.6;BW.g=g;
@@ -1015,6 +1017,7 @@ function gondolaPos(i,out){const a=WHEEL.rot+i/WHEEL.N*Math.PI*2-Math.PI/2;retur
 /* ================= jhoola ground: more rides behind the giant wheel ================= */
 // Every ride runs off the wall clock, so each player sees every seat in the same place at the same moment.
 const rideClock=()=>(performance.timeOrigin+performance.now())/1000;
+const MK=Object.assign({H:6},LY.MAUT);// Maut ka Kuan: wall height 6 m, gallery on top
 const RP=LY.RIDES,CAR={x:RP.carousel.x,z:RP.carousel.z,R:3.6},COL={x:RP.columbus.x,z:RP.columbus.z,piv:6.6,arm:5.2},CS={x:RP.chairs.x,z:RP.chairs.z,top:6.4,arm:2.4,L:3,phi:.55};
 const COL_X=[-2.1,-1.2,1.2,2.1];
 const carRot=()=>rideClock()*.42%(Math.PI*2);
@@ -1022,6 +1025,9 @@ const carAng=i=>carRot()+(i%8)/8*Math.PI*2+(i>=8?Math.PI/8:0);
 const carBob=i=>Math.sin(rideClock()*2.4+i*1.7)*.18;
 const colAng=()=>Math.sin(rideClock()*Math.PI*2/7.5);
 const csRot=()=>rideClock()*.85%(Math.PI*2);
+// two bikes and a car on the inside wall of Maut ka Kuan; each lap they swoop up and down
+const MK_ACTS=[{car:false,w:1.5,p:0,y:3,dy:1.1,f:.6},{car:false,w:1.35,p:2.1,y:2.3,dy:.8,f:.6},{car:true,w:1,p:4.2,y:1.4,dy:.25,f:.4}];
+function mkAct(a,t,o){const th=t*a.w+a.p,r=MK.well-(a.car?.5:.08);return o.set(MK.x+Math.cos(th)*r,a.y+Math.sin(t*a.f+a.p)*a.dy,MK.z+Math.sin(th)*r);}
 const SEAT={yaw:0,pitch:0,roll:0};
 // seat(i,out) puts the rider's hips in out and the seat's facing in SEAT (yaw 0 looks down -z, like the camera)
 const RIDES=[
@@ -1038,10 +1044,14 @@ const RIDES=[
   {id:'chairs',name:'Udan Khatola',N:12,dur:40,entry:{x:CS.x,z:CS.z+6.2},npc:[1,4,8],
     hint:'Flying chairs! Look down at the whole mela.',
     seat(i,o){const a=csRot()+i/12*Math.PI*2,rr=CS.arm+Math.sin(CS.phi)*CS.L;o.set(CS.x+Math.cos(a)*rr,CS.top-Math.cos(CS.phi)*CS.L+.12,CS.z+Math.sin(a)*rr);
-      SEAT.yaw=Math.PI-a;SEAT.pitch=0;SEAT.roll=-CS.phi;return o;}}
+      SEAT.yaw=Math.PI-a;SEAT.pitch=0;SEAT.roll=-CS.phi;return o;}},
+  {id:'maut',name:'Maut ka Kuan',N:24,dur:40,entry:{x:MK.x-6.2,z:MK.stairs.z},npc:[1,4,7,11,15,19,22],verb:'Watch',look:-.55,
+    go:'Up on the rim! Watch the bikes ride the wall.',done:'Back down the stairs.',
+    hint:'Drag to look around. The riders climb the wall every lap.',
+    seat(i,o){const a=i/24*Math.PI*2;o.set(MK.x+Math.cos(a)*9.2,MK.H+.5,MK.z+Math.sin(a)*9.2);SEAT.yaw=Math.atan2(Math.cos(a),Math.sin(a));SEAT.pitch=SEAT.roll=0;return o;}}
 ];
 RIDES.forEach((R,i)=>R.idx=i);
-const RIDEG={car:null,horses:[],col:null,cs:null};
+const RIDEG={car:null,horses:[],col:null,cs:null,mk:[]};
 const _sq=new THREE.Quaternion(),_seatP=new V3(),_su=new V3();
 // place a seated figure (a group whose forward is -z) so its hips land on seat i
 function sitOn(g,R,i,hh=.9){R.seat(i,_seatP);g.rotation.set(SEAT.pitch,SEAT.yaw,SEAT.roll,'YXZ');_sq.setFromEuler(g.rotation);g.position.copy(_seatP).sub(_su.set(0,hh,0).applyQuaternion(_sq));}
@@ -1058,7 +1068,7 @@ function buildRides(){
   const fl=new THREE.Mesh(new THREE.PlaneGeometry(W,D),new THREE.MeshLambertMaterial({map:tex}));fl.rotation.x=-Math.PI/2;fl.position.set((JG.x0+JG.x1)/2,.011,(JG.z0+JG.z1)/2);fl.userData.ground=true;scene.add(fl);clickables.push(fl);
   // lamp posts every ~16 m round the edge, from one side of the corridor mouth to the other
   const x0=JG.x0+1,x1=JG.x1-1,z0=JG.z0+1,z1=JG.z1-1,posts=[],edge=(ax,az,bx,bz)=>{const n=Math.max(1,Math.round(Math.hypot(bx-ax,bz-az)/16));for(let i=0;i<n;i++)posts.push([ax+(bx-ax)*i/n,az+(bz-az)*i/n]);};
-  edge(-9,z1,x0,z1);edge(x0,z1,x0,z0);edge(x0,z0,x1,z0);edge(x1,z0,x1,z1);edge(x1,z1,9,z1);posts.push([9,z1]);posts.forEach(([x,z])=>lampPost(x,z));
+  const mx=NORTH.hx+1.5;edge(-mx,z1,x0,z1);edge(x0,z1,x0,z0);edge(x0,z0,x1,z0);edge(x1,z0,x1,z1);edge(x1,z1,mx,z1);posts.push([mx,z1]);posts.forEach(([x,z])=>lampPost(x,z));
   for(let i=0;i<posts.length-1;i++){const [ax,az]=posts[i],[bx,bz]=posts[i+1];stringLights(new V3(ax,3.3,az),new V3(bx,3.3,bz),.9,20,[42,350,160,48,280]);bunting(new V3(ax,3.9,az),new V3(bx,3.9,bz),.8);}
   const sign=textSprite('Jhoola ground · all rides free',{size:.5});sign.position.set(0,4.6,JG.z1-.4);scene.add(sign);
   // Ghoda Gaadi: merry-go-round
@@ -1110,6 +1120,42 @@ function buildRides(){
     const rail=new THREE.Mesh(new THREE.TorusGeometry(5.4,.04,6,48),gold);rail.rotation.x=Math.PI/2;rail.position.y=.85;base.add(rail);
     const tag=textSprite('Udan Khatola · flying chairs',{size:.4});tag.position.set(0,CS.top+2.3,0);base.add(tag);
     rideHit(R,new THREE.CylinderGeometry(5.4,5.4,7,12),3.5,base);}
+  // Maut ka Kuan: wooden well, rim gallery with benches, a stair up the south side, two bikes and a car on the wall
+  {const R=RIDES[4],base=new THREE.Group();base.position.set(MK.x,0,MK.z);scene.add(base);const H=MK.H,wr=MK.well,gr=MK.r;
+    const planks=canvasTex(1024,128,(g,w,h)=>{for(let i=0;i<64;i++){g.fillStyle=`hsl(${rand(20,30)},${rand(35,50)}%,${rand(18,28)}%)`;g.fillRect(i*w/64,0,w/64-1,h);}g.fillStyle='rgba(0,0,0,.25)';for(let y=0;y<h;y+=32)g.fillRect(0,y,w,2);});
+    planks.wrapS=THREE.RepeatWrapping;planks.repeat.set(3,2);
+    const inner=new THREE.Mesh(new THREE.CylinderGeometry(wr,wr,H,48,1,true),new THREE.MeshLambertMaterial({map:planks,side:THREE.BackSide,emissive:'#1a0d06'}));inner.position.y=H/2;base.add(inner);
+    const paint=canvasTex(2048,256,(g,w,h)=>{g.fillStyle='#3a0d12';g.fillRect(0,0,w,h);g.strokeStyle='#ffb627';g.lineWidth=10;g.strokeRect(5,12,w-10,h-24);
+      g.textAlign='center';g.textBaseline='middle';for(const [x,t,c,f] of [[w*.18,'MAUT KA KUAN','#ffd27a','120px "Yatra One", Georgia, serif'],[w*.5,'मौत का कुआँ','#ff4f7e','800 110px Mukta, sans-serif'],[w*.82,'HIMMAT KA KHEL','#22c7b8','800 96px Mukta, sans-serif']]){g.fillStyle=c;g.font=f;g.fillText(t,x,h/2+6);}});
+    const outer=new THREE.Mesh(new THREE.CylinderGeometry(wr+.3,wr+.3,H,48,1,true),new THREE.MeshLambertMaterial({map:paint,emissive:'#2a0a0a'}));outer.position.y=H/2;base.add(outer);
+    const fl=new THREE.Mesh(new THREE.CircleGeometry(wr,40),lam('#5a3a22'));fl.rotation.x=-Math.PI/2;fl.position.y=.02;base.add(fl);
+    const deck=new THREE.Mesh(new THREE.RingGeometry(wr,gr,48),lam('#6b3a1f',{side:THREE.DoubleSide}));deck.rotation.x=-Math.PI/2;deck.position.y=H;base.add(deck);
+    const bench=new THREE.Mesh(new THREE.RingGeometry(8.95,9.45,48),lam('#4a2614',{side:THREE.DoubleSide}));bench.rotation.x=-Math.PI/2;bench.position.y=H+.45;base.add(bench);
+    for(const [r,y] of [[wr+.1,H+.75],[gr-.1,H+1.05]]){const rail=new THREE.Mesh(new THREE.TorusGeometry(r,.04,6,64),gold);rail.rotation.x=Math.PI/2;rail.position.y=y;base.add(rail);}
+    for(let i=0;i<16;i++){const a=i/16*Math.PI*2;const po=new THREE.Mesh(new THREE.CylinderGeometry(.12,.14,H,6),woodDark);po.position.set(Math.cos(a)*(gr-.4),H/2,Math.sin(a)*(gr-.4));base.add(po);
+      for(const [r,h] of [[wr+.1,.75],[gr-.1,1.05]]){const pp=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,h,4),gold);pp.position.set(Math.cos(a)*r,H+h/2,Math.sin(a)*r);base.add(pp);}}
+    for(let i=0;i<64;i++){const a=i/64*Math.PI*2;addBulb(MK.x+Math.cos(a)*(gr-.1),H+1.12,MK.z+Math.sin(a)*(gr-.1),pick([42,350,160,48]));addBulb(MK.x+Math.cos(a)*(wr+.05),H+.05,MK.z+Math.sin(a)*(wr+.05),pick([42,30]));}
+    // stair up the south side, from the west, with a landing onto the gallery
+    const st=MK.stairs,sx0=st.x-st.hx,n=12,run=(2*st.hx-1.2)/n,sw=lam('#7a4a26');
+    for(let i=0;i<n;i++){const s=new THREE.Mesh(new THREE.BoxGeometry(run+.02,.12,2*st.hz),sw);s.position.set(sx0+(i+.5)*run-MK.x,(i+1)*H/n-.06,st.z-MK.z);base.add(s);
+      const leg=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,(i+1)*H/n,4),woodDark);leg.position.set(sx0+(i+.5)*run-MK.x,(i+1)*H/n/2,st.z+st.hz-.1-MK.z);base.add(leg);}
+    const land=new THREE.Mesh(new THREE.BoxGeometry(3,.12,3.4),sw);land.position.set(st.x+st.hx-1.5-MK.x,H-.06,st.z-st.hz-1-MK.z);base.add(land);
+    const sr=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,Math.hypot(2*st.hx-1.2,H),4),gold);sr.position.set(st.x-.6-MK.x,H/2+.9,st.z+st.hz-.05-MK.z);sr.rotation.z=-Math.atan2(2*st.hx-1.2,H);base.add(sr);
+    const tag=textSprite('Maut ka Kuan · well of death',{size:.5});tag.position.set(0,H+3.4,0);base.add(tag);
+    for(let i=0;i<4;i++){const a=i/4*Math.PI*2+Math.PI/4;const fp=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,3,5),woodDark);fp.position.set(Math.cos(a)*(gr-.4),H+1.5,Math.sin(a)*(gr-.4));base.add(fp);
+      const fg=new THREE.Mesh(new THREE.PlaneGeometry(.9,.55),lam(['#ff4f7e','#ffb627','#22c7b8','#ff7a1a'][i],{side:THREE.DoubleSide,emissive:'#2a0a0a'}));fg.position.set(Math.cos(a)*(gr-.4)+.45,H+2.7,Math.sin(a)*(gr-.4));base.add(fg);}
+    // the riders: built facing +z with wheels at y=0, placed every frame by animMaut
+    MK_ACTS.forEach((a,i)=>{const g=new THREE.Group();scene.add(g);RIDEG.mk.push(g);
+      const W=(x,y,z,r)=>{const w=new THREE.Mesh(new THREE.TorusGeometry(r,r*.32,6,16),lam('#1a1a1a'));w.rotation.y=Math.PI/2;w.position.set(x,y,z);g.add(w);};
+      if(a.car){const body=new THREE.Mesh(new THREE.BoxGeometry(1.5,.55,2.6),lam('#e11d48',{emissive:'#300810'}));body.position.y=.55;g.add(body);
+        const cab=new THREE.Mesh(new THREE.BoxGeometry(1.3,.45,1.3),lam('#f3e6cf'));cab.position.set(0,1.05,-.15);g.add(cab);
+        for(const x of[-.75,.75])for(const z of[-.85,.85])W(x,.3,z,.3);
+        for(const x of[-.5,.5]){const hl=glowSprite(.7,0xfff0c0);hl.position.set(x,.6,1.35);g.add(hl);}}
+      else{const col=['#3b6fd1','#ffb627'][i];const fr=new THREE.Mesh(new THREE.BoxGeometry(.22,.32,1.15),lam(col,{emissive:new THREE.Color(col).multiplyScalar(.25)}));fr.position.y=.55;g.add(fr);
+        W(0,.32,.62,.32);W(0,.32,-.62,.32);const hb=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.7,4),lam('#c9c2b0'));hb.rotation.z=Math.PI/2;hb.position.set(0,.95,.5);g.add(hb);
+        const rd=person({plain:true,scale:1,col:['#f3e6cf','#c4283d'][i]});rd.traverse(m=>{if(m.geometry===blobGeo)m.visible=false;});scene.remove(rd);g.add(rd);rd.position.set(0,-.25,-.1);sitPose(rd.userData.rig,true);
+        const hl=glowSprite(.8,0xfff0c0);hl.position.set(0,.75,.8);g.add(hl);}});
+    rideHit(R,new THREE.CylinderGeometry(gr,gr,H+1,16),(H+1)/2,base);}
   // a few mela-goers already riding
   for(const R of RIDES){R.npcG=R.npc.map(i=>{const w=new THREE.Group(),g=person({plain:true,scale:1});g.rotation.y=Math.PI;w.add(g);scene.add(w);
     g.traverse(m=>{if(m.geometry===blobGeo)m.visible=false;});sitPose(g.userData.rig,R.astride);return{w,i};});}
@@ -1166,7 +1212,7 @@ function openAd(where){const v=AD.views[where]||AD.views.stand;AD.dlgPos=v.pos;A
 const standAt=k=>LY.slotAt(k,RING.stall-.4);
 const SLOT_DEFS=Object.fromEntries(Object.entries(LY.BRAND).map(([id,d])=>[id,d.kind==='hoarding'?{kind:d.kind,at:{x:d.x,z:d.z,ry:d.ry},w:d.w}:{kind:d.kind,k:d.k,at:standAt(d.k)}]));
 const DEFAULT_ON=[];// with no list to go on, only KollabKit shows
-const BUILT={};let BRAND_CART=null;// the cart that stands in the brand stall's slot while it is off
+const BUILT={};
 const FEST={};
 function festiveTex(part){if(FEST[part])return FEST[part];const wide=part==='wide';
   return FEST[part]=canvasTex(wide?1024:576,wide?576:1024,(g,w,h)=>{
@@ -1230,7 +1276,7 @@ function dress(b,c){b.campaign=c||null;b.seenT=0;b.seen=false;b.wasIn=false;cons
   if(sp.keeper){sp.keeper.visible=!!c;if(!c&&sp.bubble){sp.keeper.remove(sp.bubble);sp.bubble=null;}}
   if(b.sign)drawSign(b,c?c.brand.toUpperCase():'SHUBH DEEPAVALI');}
 function showSlot(b,on){b.g.visible=on;setClickable(b.hit,on&&!!b.campaign);if(!on&&DLG.s===b.sponsor)closeDialog();
-  if(b.id==='stall-ring-b'&&BRAND_CART)BRAND_CART.g.visible=!on;}
+}
 // state from brands.js ({slots:{id:{kind,campaign}}}), or null when nothing could be fetched
 function applySlots(state){const want=state?state.slots:Object.fromEntries(DEFAULT_ON.map(id=>[id,{kind:SLOT_DEFS[id].kind,campaign:null}]));
   for(const id in SLOT_DEFS){const d=SLOT_DEFS[id],w=want[id];let b=BUILT[id];
@@ -1255,8 +1301,17 @@ function slotViews(now){if(now-viewAt<250)return;const el=Math.min(1,(now-viewAt
 function slotTick(dt,now){for(const id in BUILT){const b=BUILT[id],sp=b.sponsor;if(!b.g.visible||!sp.keeper||!sp.campaign)continue;
     keeperAnim(sp,dt);if(sp.bubble){sp.bubbleT-=dt;if(sp.bubbleT<=0){sp.keeper.remove(sp.bubble);sp.bubble=null;}}}
   slotViews(now);}
+// performers face along the wall with their wheels on it, leaning a little upward
+const _mkp=new V3(),_mkf=new V3(),_mku=new V3(),_mkr=new V3(),_mkm=new THREE.Matrix4();
+function animMaut(){const t=rideClock();RIDEG.mk.forEach((g,i)=>{const a=MK_ACTS[i],th=t*a.w+a.p;mkAct(a,t,_mkp);g.position.copy(_mkp);
+  _mkf.set(-Math.sin(th),0,Math.cos(th));_mku.set(-Math.cos(th),.3,-Math.sin(th)).normalize();_mkr.crossVectors(_mku,_mkf).normalize();_mku.crossVectors(_mkf,_mkr);
+  g.quaternion.setFromRotationMatrix(_mkm.makeBasis(_mkr,_mku,_mkf));});}
+let mkSndT=0;
+function mautTick(){if(!S.sound||!A.ctx||!RIDEG.mk.length)return;const now=A.ctx.currentTime;if(now<mkSndT)return;mkSndT=now+.2;
+  if(Math.hypot(player.x-MK.x,player.z-MK.z)>70&&!(CAM.ride&&CAM.ride.r.id==='maut'))return;
+  RIDEG.mk.forEach((g,i)=>{const a=MK_ACTS[i];tone(g.position,{f0:a.car?62:88+i*9,f1:a.car?70:104+i*9,dur:.24,gain:a.car?.05:.06,type:'sawtooth',vib:a.car?4:9,vibD:6});});}
 function animRides(){if(RIDEG.car){RIDEG.car.rotation.y=-carRot();RIDEG.horses.forEach((h,i)=>{h.position.y=1.2+carBob(i);});}
-  if(RIDEG.col)RIDEG.col.rotation.z=colAng();if(RIDEG.cs)RIDEG.cs.rotation.y=-csRot();
+  if(RIDEG.col)RIDEG.col.rotation.z=colAng();if(RIDEG.cs)RIDEG.cs.rotation.y=-csRot();if(RIDEG.mk.length)animMaut();
   for(const R of RIDES)if(R.npcG)for(const n of R.npcG)sitOn(n.w,R,n.i);}
 
 /* ================= particles ================= */
@@ -1917,13 +1972,13 @@ function rideStat(){const m=CAM.ride?rideMates(CAM.ride.r).map(peerName):[];retu
 function updRideHud(){if(CAM.ride)$('#gameStat').textContent=rideStat();}
 function startRide(R){R=R||RIDES[0];if(CAM.ride||GAME.on)return;closeDialog();cancelGoto();
   const i=pickSeat(R);if(i<0){toast(`${R.name} is full. Try again in a moment.`);return;}
-  CAM.ride={r:R,i,t:0};player.tyaw=player.yaw=0;player.tpitch=player.pitch=.02;
-  const m=rideMates(R).map(peerName);toast(m.length?`You sit with ${m.join(', ')}. Hold on!`:R.id==='wheel'?'Hold on! The wheel climbs over the whole bazaar.':`Hold on! ${R.name} is moving.`);
+  CAM.ride={r:R,i,t:0};player.tyaw=player.yaw=0;player.tpitch=player.pitch=R.look??.02;
+  const m=rideMates(R).map(peerName);toast(m.length?`You sit with ${m.join(', ')}. Hold on!`:R.go||(R.id==='wheel'?'Hold on! The wheel climbs over the whole bazaar.':`Hold on! ${R.name} is moving.`));
   if(R.id==='wheel')talk(null,L.wheel);SND.creak({x:R.entry.x,y:1,z:R.entry.z});
   const btns=[['Get off',endRide]];if(N.ch&&giftPeers().length)btns.unshift(['Call friends',()=>{if(sendChat(`Come ride the ${R.name} with me!`))toast('Friends invited.');}]);
   gameHud(R.name,rideStat(),R.hint,btns);pushPresence();}
 function endRide(){if(!CAM.ride)return;const R=CAM.ride.r;CAM.ride=null;player.x=R.entry.x;player.z=R.entry.z+(R.id==='wheel'?.9:0);player.vx=player.vz=0;player.tyaw=0;player.tpitch=.06;
-  $('#gameHud').hidden=true;toast('Back on the ground.');pushPresence();}
+  $('#gameHud').hidden=true;toast(R.done||'Back on the ground.');pushPresence();}
 
 /* ================= interactables & prompt ================= */
 let IA=[];let near=null;
@@ -1931,7 +1986,7 @@ function interactables(){const list=[];
   for(const s of STALLS)list.push({pos:s.front,r:3.4,name:s.name,s,verb:s.type==='ring'||s.type==='shoot'?'Play':'Talk',act:()=>openDialog(s)});
   list.push({pos:new V3(BW.x,0,BW.z),r:2.6,name:'Balloon-wala',verb:'Talk',act:openBW});
   list.push({pos:new V3(DHOL.x,0,DHOL.z),r:3.5,name:'Dhol-wala',verb:'Faster beat',act:dholFast});
-  for(const R of RIDES)list.push({pos:new V3(R.entry.x,0,R.entry.z),r:3.4,name:R.name,verb:'Ride',act:()=>startRide(R)});
+  for(const R of RIDES)list.push({pos:new V3(R.entry.x,0,R.entry.z),r:3.4,name:R.name,verb:R.verb||'Ride',act:()=>startRide(R)});
   list.push({pos:AD.front,r:3.2,name:'KollabKit',verb:'Talk',act:()=>openAd('stand')});
   for(const id in BUILT){const b=BUILT[id],sp=b.sponsor;if(b.g.visible&&sp.campaign&&sp.front)list.push({pos:sp.front,r:3.2,name:sp.name,verb:'Talk',act:()=>openSponsor(sp)});}
   return list;}
@@ -1951,7 +2006,7 @@ function updLoc(){let t;if(CAM.ride)t='On the '+CAM.ride.r.name;else if(GAME.on&
   else{const zn=LY.zoneAt(player.x,player.z);
     if(zn==='maidan')t='The maidan';else if(zn==='corridor')t='Giant wheel';
     else if(zn==='ring'){const b=nearest(STALLS.map(s=>({x:s.front.x,z:s.front.z,name:s.name})),5.5);t=b?b.name:'Parikrama path';}
-    else if(zn==='jhoola'){const b=nearest(RIDES.map(R=>({x:R.entry.x,z:R.entry.z,name:R.name})).concat(LY.PLOTS),8);t=b?b.name:'Jhoola ground';}
+    else if(zn==='jhoola'){const b=nearest(RIDES.map(R=>({x:R.entry.x,z:R.entry.z,name:R.name})),8);t=b?b.name:'Jhoola ground';}
     else t='Bazaar gate';}
   if(t!==locShown){locShown=t;$('#locTxt').textContent=t;}}
 
@@ -1966,9 +2021,8 @@ function drawMap(){const g=mctx,w=mapC.width,h=mapC.height;g.clearRect(0,0,w,h);
   let [a,b]=mp(-ENTRY.hx,ENTRY.z1),[c,d]=mp(ENTRY.hx,C.z+RING.walk-1);g.fillStyle='rgba(122,62,40,.9)';g.fillRect(a,b,c-a,d-b);
   [a,b]=mp(-NORTH.hx,C.z-RING.walk+1);[c,d]=mp(NORTH.hx,NORTH.z0);g.fillRect(a,b,c-a,d-b);
   [a,b]=mp(JG.x0,JG.z1);[c,d]=mp(JG.x1,JG.z0);g.fillStyle='rgba(90,40,26,.9)';g.fillRect(a,b,c-a,d-b);
-  g.lineWidth=3;for(const [x,z,r,col] of [[CAR.x,CAR.z,CAR.R,'#ff4f7e'],[CS.x,CS.z,4.4,'#22c7b8']]){const [mx,my]=mp(x,z);g.strokeStyle=col;g.beginPath();g.arc(mx,my,r*(mp(1,0)[0]-mp(0,0)[0]),0,7);g.stroke();}
+  g.lineWidth=3;for(const [x,z,r,col] of [[CAR.x,CAR.z,CAR.R,'#ff4f7e'],[CS.x,CS.z,4.4,'#22c7b8'],[LY.MAUT.x,LY.MAUT.z,LY.MAUT.r,'#f97316']]){const [mx,my]=mp(x,z);g.strokeStyle=col;g.beginPath();g.arc(mx,my,r*(mp(1,0)[0]-mp(0,0)[0]),0,7);g.stroke();}
   {const [mx,my]=mp(COL.x,COL.z);g.strokeStyle='#9b7bff';g.beginPath();g.moveTo(mx-16,my);g.quadraticCurveTo(mx,my+10,mx+16,my);g.stroke();}
-  g.lineWidth=1.5;g.setLineDash([4,3]);g.strokeStyle='rgba(103,232,249,.8)';for(const pl of LY.PLOTS){const [a,b]=mp(pl.x-pl.w/2,pl.z+pl.d/2),[c,d]=mp(pl.x+pl.w/2,pl.z-pl.d/2);g.strokeRect(a,b,c-a,d-b);}g.setLineDash([]);
   for(const s of STALLS){const [x,y]=mp(s.group.position.x,s.group.position.z);g.fillStyle=s.col;g.beginPath();g.arc(x,y,4,0,7);g.fill();}
   g.strokeStyle='#ff4f7e';g.lineWidth=2;g.beginPath();g.arc(cx,cy,5*sc,0,7);g.stroke();g.fillStyle='#ffd27a';g.beginPath();g.arc(cx,cy,3,0,7);g.fill();
   const [wx,wy]=mp(WHEEL.x,WHEEL.z);g.strokeStyle='#ffb627';g.lineWidth=3;g.beginPath();g.moveTo(wx-14,wy);g.lineTo(wx+14,wy);g.stroke();
@@ -2354,7 +2408,7 @@ function resize(){const w=window.innerWidth,h=window.innerHeight;renderer.setSiz
   if(composer){composer.setPixelRatio(renderer.getPixelRatio());composer.setSize(w,h);}}
 window.addEventListener('resize',resize);
 let ambT=1;
-function ambient(dt){ambT-=dt;if(ambT>0)return;ambT=rand(2,5);const a=rand(0,Math.PI*2),r=rand(150,230);burst(Math.cos(a)*r,rand(35,70),-100+Math.sin(a)*r,{scale:.9,far:2.2,n:.45});}
+function ambient(dt){ambT-=dt;if(ambT>0)return;ambT=rand(2,5);const a=rand(0,Math.PI*2),r=rand(170,250);burst(Math.cos(a)*r,rand(35,70),-116+Math.sin(a)*r,{scale:.9,far:2.2,n:.45});}
 let walkTest=false;// test probe only: walk through the crowd
 function blocked(x,z){if(!walkTest)for(const n of NPCS){if(!n.kid&&Math.abs(n.x-x)<.5&&Math.abs(n.z-z)<.5&&Math.hypot(n.x-x,n.z-z)<.45)return true;}if(LY.blocked(x,z))return true;if(Math.hypot(x-BW.x,z-BW.z)<.6)return true;if(Math.hypot(x-DHOL.x,z-DHOL.z)<.6)return true;
   return false;}
@@ -2469,7 +2523,7 @@ function frame(now){
   if(DHOL.g){const dr=DHOL.g.userData.rig,rate=DHOL.fast>0?22:13;animRig(dr,0,0,{armsBusy:true});dr.arms[0].sh.rotation.x=-.95+Math.max(0,Math.sin(T*rate))*.35;dr.arms[1].sh.rotation.x=-.95+Math.max(0,Math.sin(T*rate+Math.PI))*.35;dr.arms[0].el.rotation.x=dr.arms[1].el.rotation.x=-.85;dr.head.rotation.y=Math.sin(T*1.5)*.3;
     if(DHOL.fast>0)DHOL.fast-=dt;DHOL.drum.rotation.x=Math.sin(T*(DHOL.fast>0?28:16))*.12;DHOL.g.position.y=Math.abs(Math.sin(T*(DHOL.fast>0?9:5)))*.05;}
   aqiSmoke=Math.max(0,aqiSmoke-dt*.0035);aqiSmoke=Math.min(aqiSmoke,1.4);scene.fog.density=.014+aqiSmoke*.032;
-  dholTick();crowdTick();updPrompt();updLoc();updAQI();netTick();if(frameN%6===0)drawMap();
+  dholTick();mautTick();crowdTick();updPrompt();updLoc();updAQI();netTick();if(frameN%6===0)drawMap();
   if(composer){grade.uniforms.uTime.value=T;composer.render(dt);}else renderer.render(scene,camera);
   requestAnimationFrame(frame);
 }
@@ -2495,6 +2549,9 @@ async function boot(){
     tap(id){tapSlot(id,0);},
     kollabkit:()=>({stand:!!AD.keeper,boards:Object.keys(AD.views).sort()}),tapKK(where){openAd(where);},
     player:()=>[player.x,player.z],stalls:()=>STALLS.map(s=>s.name),
+    rides:()=>RIDES.map(R=>R.name),ride:id=>{const R=RIDES.find(R=>R.id===id);return{x:R.entry.x,z:R.entry.z};},
+    riding:()=>CAM.ride?{name:CAM.ride.r.name,eyeY:camera.position.y}:null,
+    maut:()=>RIDEG.mk.map(g=>({x:g.position.x,y:g.position.y,z:g.position.z})),
     place(x,z){cancelGoto();player.x=x;player.z=z;player.vx=player.vz=0;},
     view(x,z,yaw,pitch){this.place(x,z);player.yaw=player.tyaw=yaw;player.pitch=player.tpitch=pitch||0;},
     // walk to (x,z) the way a tap does, stepping the clock by hand; NPCs don't block

@@ -21,7 +21,7 @@ def test_boots_on_the_new_map(browser):
 def test_walk_from_the_gate_to_the_back_of_the_jhoola_ground(browser):
     page, rec = open_game(browser)
     page.evaluate("__pbTest.place(0,8)")
-    r = walk(page, 10, -214)
+    r = walk(page, 10, -238)
     assert r["arrived"], r
     assert "Can't walk" not in (r["toast"] or ""), r
     assert rec.errors == [], rec.errors
@@ -30,10 +30,10 @@ def test_walk_from_the_gate_to_the_back_of_the_jhoola_ground(browser):
 def test_walk_across_the_ring(browser):
     page, rec = open_game(browser)
     page.evaluate("__pbTest.place(0,8)")
-    s = page.evaluate("LAYOUT.slotAt(17,45)")
+    s = page.evaluate("LAYOUT.slotAt(LAYOUT.ORDER.indexOf('Mishra Halwai'),LAYOUT.RING.walk-.5)")
     r = walk(page, s["x"], s["z"])
     assert r["arrived"], r
-    page.evaluate("__pbTest.place(0,-60)")
+    page.evaluate("__pbTest.place(0,-70)")
     e = page.evaluate("(()=>{const c=LAYOUT.RIDES.columbus;return{x:c.x,z:c.z+3.6};})()")
     r = walk(page, e["x"], e["z"])
     assert r["arrived"], r

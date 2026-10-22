@@ -1,7 +1,9 @@
 # Bigger mela: design
 
+
+> **Scope change (2026-10-22, after Task 3 of the plan):** the owner stopped the plan here. What shipped on `bigger-mela`: `layout.js` and the bigger map, made 1.25× wider than the 2× design below (lane 16 m wide, ring 122 m across with 20 slots for today's 16 stalls, KollabKit and the brand stall, jhoola ground 170 × 98 m), and **Maut ka Kuan** on the jhoola ground, watched from its rim like a ride. Not built: the 8 new stalls, carts, coming-soon plots, bigger crowds, the light pool and the other new rides.
 Date: 2026-10-22
-Status: approved 2026-10-22; building on branch `bigger-mela`
+Status: approved 2026-10-22; partly built on branch `bigger-mela` (see the scope change above)
 Part 1 of 2. Part 2 builds the five new attractions (Break Dance, Drop Tower, Toy Train, Maut ka Kuan, Bumper Cars) on the plots this part reserves. It gets its own spec.
 
 ## Goal

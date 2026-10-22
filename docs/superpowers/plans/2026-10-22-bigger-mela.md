@@ -1,5 +1,7 @@
 # Bigger Mela Implementation Plan
 
+> **Scope change (2026-10-22, after Task 3 of the plan):** the owner stopped the plan here. What shipped on `bigger-mela`: `layout.js` and the bigger map, made 1.25× wider than the 2× design below (lane 16 m wide, ring 122 m across with 20 slots for today's 16 stalls, KollabKit and the brand stall, jhoola ground 170 × 98 m), and **Maut ka Kuan** on the jhoola ground, watched from its rim like a ride. Not built: the 8 new stalls, carts, coming-soon plots, bigger crowds, the light pool and the other new rides.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** The bazaar grows to 229 × 136 m (a full tour takes about 3 minutes on foot) with 8 new stalls, carts, bigger crowds and fenced plots for the five rides of part 2.

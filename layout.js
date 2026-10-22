@@ -3,37 +3,25 @@
 (function(root){
 "use strict";
 const VERSION=2;
-const C={x:0,z:-64};
-const RING={stall:49,front:46.7,walk:45.7,maid:29,path:30.6,pathOut:50.8};
-const TRAIN={r0:31,r1:35};// kept clear for the Toy Train (part 2)
-const NPC_BAND={r0:37,r1:44.5,lanes:[43,39.5]};
-const SLOTS=30;
-// what stands in each ring slot, k=0 at the lane opening, counting round through the west side
-const ORDER=[null,'Sharma Fireworks','Pappu Chaat','Momo Point','Laxmi Patakha','Chudi Bazaar','Mehendi Corner','Ring Phenko','Dabba Giraao',
-  'Jalebi Junction','Bombay Pav Bhaji','Diya Ghar','kollabkit','Sivakasi Wale','cart',null,'cart','Mishra Halwai','brand:stall-ring-b','Kismat Chakra',
-  'Bioscope','Kulfi Wala','Ganne ka Ras','Gubbare Phodo','Photo Studio','Khilona Ghar','Akash Kandil','Raja Rockets','Raju Chai','Gupta Crackers'];
-const ENTRY={hx:6.4,z1:10},SPAWN={x:0,z:8},GATE={z:-14.6,hx:7},NORTH={hx:7.6,z0:-124};
-const JG={x0:-68,x1:68,z0:-219,z1:-121},BOUNDS={x0:-70,x1:70,z0:-221,z1:12};
-const WHEEL={x:0,z:-127,hx:4.6,hz:1.6};
-const RIDES={carousel:{x:-48,z:-144,r:4},columbus:{x:-45,z:-196,hx:5.8,hz:2},chairs:{x:0,z:-201,r:5.6}};
-const PLOTS=[{id:'breakdance',name:'Break Dance',hi:'ब्रेक डांस',x:-23,z:-166,w:18,d:18},{id:'mautkakuan',name:'Maut ka Kuan',hi:'मौत का कुआँ',x:23,z:-164,w:20,d:20},
-  {id:'droptower',name:'Drop Tower',hi:'ड्रॉप टावर',x:55,z:-140,w:10,d:10},{id:'dodgem',name:'Bumper Cars',hi:'बंपर कार',x:44,z:-198,w:24,d:16}];
-const OPEN_PLOTS=[{x:-55,z:-168,w:14,d:14},{x:55,z:-166,w:14,d:14},{x:-22,z:-211,w:14,d:14}];
-const KK={k:12,entry:{x:9,z:-4,ry:-.7,w:4.4},jhoola:{x:-40,z:-214,ry:.25,w:6.4}};
-const BRAND={'stall-ring-b':{kind:'premium_stall',k:18},'hoarding-entry-b':{kind:'hoarding',x:-9,z:-4,ry:.7,w:4.4}};
-const BW={x:-24.7,z:-35.2},DHOL={x:12,z:-28};
+const C={x:0,z:-76};
+const RING={stall:61,front:58.7,walk:57.7,maid:36,path:38,pathOut:62.8};
+const NPC_BAND={r0:41,r1:56.5,lanes:[54,49]};
+const SLOTS=20;
+// what stands in each ring slot, k=0 at the lane opening, counting round through the west side; the corridor opens at k=10
+const ORDER=[null,'Sharma Fireworks','Pappu Chaat','Laxmi Patakha','Chudi Bazaar','Ring Phenko','Jalebi Junction','Diya Ghar','kollabkit','Sivakasi Wale',
+  null,'Mishra Halwai','brand:stall-ring-b','Kismat Chakra','Kulfi Wala','Gubbare Phodo','Khilona Ghar','Raja Rockets','Raju Chai','Gupta Crackers'];
+const ENTRY={hx:8,z1:10},SPAWN={x:0,z:8},GATE={z:-14.6,hx:8.6},NORTH={hx:9.5,z0:-148};
+const JG={x0:-85,x1:85,z0:-243,z1:-145},BOUNDS={x0:-87,x1:87,z0:-245,z1:12};
+const WHEEL={x:0,z:-151,hx:4.6,hz:1.6};
+// Maut ka Kuan: a wooden well (inner radius 8) with a gallery round the rim, and a straight stair up its south side
+const MAUT={x:29,z:-188,r:10,well:8,stairs:{x:29,z:-177.1,hx:4.8,hz:.9}};
+const RIDES={carousel:{x:-60,z:-168,r:4},columbus:{x:-56,z:-220,hx:5.8,hz:2},chairs:{x:0,z:-225,r:5.6},maut:{x:MAUT.x,z:MAUT.z,r:MAUT.r}};
+const KK={k:8,entry:{x:10.5,z:-4,ry:-.7,w:4.4},jhoola:{x:-50,z:-238,ry:.25,w:6.4}};
+const BRAND={'stall-ring-b':{kind:'premium_stall',k:12},'hoarding-entry-b':{kind:'hoarding',x:-10.5,z:-4,ry:.7,w:4.4}};
+const BW={x:-30.8,z:-39.2},DHOL={x:15.5,z:-30.6};
 
 // slot k's spot at radius r; ry turns a group so its +z faces the ring centre, as the stalls are built
 function slotAt(k,r){const a=Math.PI/2+k*2*Math.PI/SLOTS;return{x:C.x+Math.cos(a)*r,z:C.z+Math.sin(a)*r,ry:Math.atan2(-Math.cos(a),-Math.sin(a)),a};}
-
-const KINDS=['chana','bhutta','gola','buddhi'];
-const CARTS=(()=>{const out=[],add=(x,z,ry)=>out.push({x,z,ry,kind:KINDS[out.length%KINDS.length]});
-  for(const k of [14,16]){const s=slotAt(k,RING.stall-.6);add(s.x,s.z,s.ry);}
-  add(-9,4,Math.PI/2);add(9,4,-Math.PI/2);
-  for(let x=-48;x<=48;x+=8)add(x,-181,0);
-  for(let x=-30;x<=30;x+=8)add(x,-149,0);
-  return out;})();
-const BRAND_CART=(()=>{const s=slotAt(18,RING.stall-.6);return{x:s.x,z:s.z,ry:s.ry,kind:'chana'};})();
 
 const inLane=(x,z)=>Math.abs(x)<ENTRY.hx&&z>C.z+RING.walk-2.5&&z<ENTRY.z1;
 const inCorridor=(x,z)=>Math.abs(x)<NORTH.hx&&z<C.z-RING.walk+2.5&&z>NORTH.z0;
@@ -49,9 +37,7 @@ function walkable(x,z){const r=Math.hypot(x-C.x,z-C.z);if(r<RING.walk)return r>.
 const inBox=(x,z,b,hx,hz)=>Math.abs(x-b.x)<hx&&Math.abs(z-b.z)<hz;
 function blocked(x,z){if(inBox(x,z,WHEEL,WHEEL.hx,WHEEL.hz))return true;
   for(const k in RIDES){const r=RIDES[k];if(r.r?Math.hypot(x-r.x,z-r.z)<r.r:inBox(x,z,r,r.hx,r.hz))return true;}
-  for(const p of PLOTS)if(inBox(x,z,p,p.w/2,p.d/2))return true;
-  for(const c of CARTS)if(Math.abs(x-c.x)<1.1&&Math.abs(z-c.z)<1.1&&Math.hypot(x-c.x,z-c.z)<1.1)return true;
-  return false;}
+  const st=MAUT.stairs;return inBox(x,z,st,st.hx,st.hz);}
 const open=(x,z)=>walkable(x,z)&&!blocked(x,z);
 // room for a body: open here and 0.45 m away in four directions
 const roomy=(x,z)=>open(x,z)&&open(x+.45,z)&&open(x-.45,z)&&open(x,z+.45)&&open(x,z-.45);
@@ -93,11 +79,7 @@ function route(fx,fz,tx,tz){const a={x:fx,z:fz},b={x:tx,z:tz};if(clear(a,b))retu
   const pts=[a,...cells,b],out=[];let i=0;
   while(i<pts.length-1){let j=pts.length-1;while(j>i+1&&!clear(pts[i],pts[j]))j--;if(j<pts.length-1)out.push(pts[j]);i=j;}
   return out;}
-// spots on the jhoola ground for walkers to head to: a 10 m grid, each with 2 m of room all round
-const WANDER=(()=>{const out=[];for(let x=JG.x0+5;x<JG.x1;x+=10)for(let z=JG.z1-5;z>JG.z0;z-=10){let ok=open(x,z);
-  for(let a=0;a<8&&ok;a++)ok=open(x+Math.cos(a*Math.PI/4)*2,z+Math.sin(a*Math.PI/4)*2);if(ok)out.push({x,z});}return out;})();
-
-const LAYOUT={VERSION,C,RING,TRAIN,NPC_BAND,SLOTS,ORDER,ENTRY,SPAWN,GATE,NORTH,JG,BOUNDS,WHEEL,RIDES,PLOTS,OPEN_PLOTS,CARTS,BRAND_CART,KK,BRAND,BW,DHOL,WANDER,
+const LAYOUT={VERSION,C,RING,NPC_BAND,SLOTS,ORDER,ENTRY,SPAWN,GATE,NORTH,JG,BOUNDS,WHEEL,MAUT,RIDES,KK,BRAND,BW,DHOL,
   slotAt,zoneAt,clampToMap,clampToMaidan,walkable,blocked,route};
 if(typeof module!=='undefined'&&module.exports)module.exports=LAYOUT;else root.LAYOUT=LAYOUT;
 })(typeof window!=='undefined'?window:globalThis);
