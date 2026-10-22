@@ -275,8 +275,10 @@ function renderStats(){
     el('p',{class:'muted'},'A view is a player having the board on screen, within 25 m, for a second. Each player counts once per brand per day.'),
     el('div',{id:'sTable',class:'list'}));
   loadStats();}
+// Supabase returns at most 1,000 rows per request, so long ranges come in pages
+async function allRows(query){const out=[];for(let i=0;;i+=1000){const {data,error}=await query().range(i,i+999);if(error)return{error};out.push(...data);if(data.length<1000)return{data:out};}}
 async function loadStats(){const from=$('#sFrom').value,to=$('#sTo').value;
-  const {data,error}=await sb.from('stats_daily').select('campaign_id,day,views,clicks').gte('day',from).lte('day',to);
+  const {data,error}=await allRows(()=>sb.from('stats_daily').select('campaign_id,day,views,clicks').gte('day',from).lte('day',to).order('day').order('campaign_id'));
   if(error){toast("Couldn't load stats: "+error.message);return;}
   const byId=Object.fromEntries(D.campaigns.map(c=>[c.id,c])),per={};
   SROWS=data.map(r=>Object.assign({},r,{brand:(byId[r.campaign_id]||{}).brand||'(deleted)',slot:(byId[r.campaign_id]||{}).slot_id||''}))
