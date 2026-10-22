@@ -5,9 +5,8 @@
 (()=>{
 "use strict";
 if(window.claude&&window.claude.use)return;
-// Public anon key: safe to ship, it only grants what Realtime allows anonymous clients.
-const SB_URL='https://nfwjloqitqavtiumhgjc.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5md2psb3FpdHFhdnRpdW1oZ2pjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MTg1MjMsImV4cCI6MjEwODA5NDUyM30.s-DixKXM2-zPxeLXfIDdrg5vW19DJMDZHAdJ1cFGmdk';
+// project and public anon key come from sb-config.js
+const SB_URL=window.SB&&window.SB.url,SB_KEY=window.SB&&window.SB.key;
 if(!SB_URL||!SB_KEY)return;
 const LIB='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
 const MIN_GAP=300;

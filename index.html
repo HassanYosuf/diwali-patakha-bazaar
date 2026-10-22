@@ -149,7 +149,7 @@ button.pill{cursor:pointer;}button.pill:hover{border-color:rgba(255,182,39,.55);
 #map{width:150px;height:200px;display:block;border-radius:8px;}
 .mapwrap.min #map{display:none;}
 
-.dialog{position:fixed;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 120px);width:min(400px,calc(100% - 32px));background:rgba(18,12,36,.94);border:1px solid var(--line);border-radius:18px;padding:16px 16px 14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 24px 60px rgba(0,0,0,.55);z-index:4;transform-origin:bottom left;animation:pop .22s ease;}
+.dialog{position:fixed;overflow-wrap:anywhere;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 120px);width:min(400px,calc(100% - 32px));background:rgba(18,12,36,.94);border:1px solid var(--line);border-radius:18px;padding:16px 16px 14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 24px 60px rgba(0,0,0,.55);z-index:4;transform-origin:bottom left;animation:pop .22s ease;}
 @keyframes pop{from{opacity:0;transform:translateY(10px) scale(.98);}to{opacity:1;transform:none;}}
 .dlg-eyebrow{font:800 10.5px var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--peacock);}
 .dlg-title{font:400 24px/1.1 var(--display);color:var(--marigold);margin:0;padding-right:36px;}
@@ -200,6 +200,9 @@ button.pill{cursor:pointer;}button.pill:hover{border-color:rgba(255,182,39,.55);
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
 .field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:180px;}
 .field label{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+.field select,.field textarea{border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--ink);padding:8px 12px;font:600 15px var(--body);}
+.field select{height:40px;padding:0 10px;}.field textarea{resize:vertical;min-height:72px;}
+#advF{display:flex;flex-direction:column;gap:12px;}#advF[hidden]{display:none;}.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;}
 .field input{height:40px;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--ink);padding:0 12px;font:600 15px var(--body);}
 .code{font-family:var(--display);font-size:28px;color:var(--peacock);}
 .peers{display:flex;gap:6px;flex-wrap:wrap;}
@@ -227,6 +230,7 @@ button.pill{cursor:pointer;}button.pill:hover{border-color:rgba(255,182,39,.55);
   .hero{background:linear-gradient(0deg,rgba(8,6,24,.9) 0%,rgba(8,6,24,.55) 55%,rgba(8,6,24,.1) 100%);align-items:flex-end;}
 }
 @media (prefers-reduced-motion:reduce){.sheet,.toast{transition:none;}.dialog{animation:none;}}
+.pvstrip{position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:50;padding:4px 14px;border-radius:0 0 10px 10px;background:#9b5cff;color:#fff;font:700 13px var(--body);letter-spacing:.02em;pointer-events:none;}
 </style>
 <script>
   window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
@@ -369,6 +373,23 @@ button.pill{cursor:pointer;}button.pill:hover{border-color:rgba(255,182,39,.55);
       <dt>On your phone</dt><dd>Left joystick to walk (push to the edge to run), drag anywhere else to look, tap to walk there</dd>
     </dl>
     <p class="note">Stalls around the ring, starting beside the gate: Sharma Fireworks, Gupta Crackers, Pappu Chaat, Raju Chai, Laxmi Patakha, Raja Rockets, Chudi Bazaar, Khilona Ghar, Ring Phenko, Gubbare Phodo, Jalebi Junction, Kulfi Wala, Diya Ghar, Kismat Chakra, Sivakasi Wale and Mishra Halwai. The balloon-wala walks the parikrama path. Crackers are lit in the central maidan around the pole. The giant wheel stands just past the ring, opposite the gate. Diyas and rangoli from Diya Ghar can be placed anywhere, and your friends see them too.</p>
+    <p class="note">Want your brand in the bazaar? <button class="btn" type="button" id="advBtn" style="height:30px;margin-left:6px">Advertise with us</button></p>
+  </div>
+</section>
+
+<section class="sheet closed" id="adForm" aria-label="Advertise with us" aria-hidden="true">
+  <div class="sheet-in">
+    <div class="sheet-head"><div><h2>Advertise with us</h2><p>A few boards and stalls in the bazaar carry brands. Tell us about yours and we'll get in touch.</p></div><button class="x" type="button" data-close aria-label="Close">×</button></div>
+    <form id="advF" novalidate>
+      <div class="row"><div class="field"><label for="advName">Your name</label><input id="advName" maxlength="80" autocomplete="name"></div>
+        <div class="field"><label for="advBrand">Brand</label><input id="advBrand" maxlength="80" autocomplete="organization"></div></div>
+      <div class="row"><div class="field"><label for="advContact">Email or phone</label><input id="advContact" maxlength="120" autocomplete="email"></div>
+        <div class="field"><label for="advInterest">Interested in</label><select id="advInterest"><option value="hoarding">A hoarding</option><option value="premium_stall">A stall with a shopkeeper</option><option value="basic_stall">A simple stall</option><option value="not_sure" selected>Not sure yet</option></select></div></div>
+      <div class="field"><label for="advMsg">Anything else (optional)</label><textarea id="advMsg" maxlength="1000" rows="3"></textarea></div>
+      <div class="hp" aria-hidden="true"><label for="advWebsite">Website</label><input id="advWebsite" tabindex="-1" autocomplete="off"></div>
+      <div class="row"><button class="btn solid" type="submit" id="advSend">Send</button><span class="note" id="advNote" role="status"></span></div>
+    </form>
+    <p class="note" id="advDone" hidden>Thanks! We'll get in touch soon.</p>
   </div>
 </section>
 
@@ -394,7 +415,9 @@ button.pill{cursor:pointer;}button.pill:hover{border-color:rgba(255,182,39,.55);
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="sb-config.js"></script>
 <script src="net.js"></script>
+<script src="brands.js"></script>
 <script>
 (()=>{
 "use strict";
@@ -780,6 +803,8 @@ function buildGround(){
   for(const [z0,z1,hw] of [[C.z+RING.walk-1,6,ENTRY.hx+.6],[NORTH.z0-1,C.z-RING.walk+1,NORTH.hx+.4]]){const L=z1-z0;const m=new THREE.Mesh(new THREE.PlaneGeometry(hw*2,L),bmat.clone());m.material.map=brick.clone();m.material.map.repeat.set(hw*2/2,L/2);m.material.map.needsUpdate=true;
     m.rotation.x=-Math.PI/2;m.position.set(0,.013,(z0+z1)/2);m.userData.ground=true;scene.add(m);clickables.push(m);}
   const rg=new THREE.Mesh(new THREE.CircleGeometry(5,48),new THREE.MeshLambertMaterial({map:rangoliTex,transparent:true}));rg.rotation.x=-Math.PI/2;rg.position.set(C.x,.02,C.z);scene.add(rg);rg.userData.ground=true;clickables.push(rg);
+  // soft warm wash over the maidan, fading out before the stalls
+  const wash=new THREE.PointLight(0xffc78a,.9,26,1.2);wash.position.set(C.x,10,C.z);scene.add(wash);
 }
 // painted light pools: warm glow on the ground under every lamp, stall and the pole
 function buildPools(){const S0=80,cx=0,cz=C.z+4;const tex=canvasTex(1024,1024,(g,w,h)=>{const k=w/S0;const P=(x,z)=>[(x-cx+S0/2)*k,(z-cz+S0/2)*k];
@@ -794,14 +819,14 @@ function buildEntry(){
   for(let z=2.5;z>=C.z+RING.walk+.5;z-=3)bunting(new V3(-4.4,5.3,z),new V3(4.4,5.3,z),.6);
   for(const sx of[-4.3,4.3])for(let z=4;z>=C.z+RING.walk+.5;z-=3){const pl=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,4.6,6),woodDark);pl.position.set(sx,2.3,z);scene.add(pl);}}
 const LAMPS=[];
-function lampPost(x,z){const g=new THREE.Group();g.position.set(x,0,z);const iron=lam('#2a2230',{emissive:'#0a0810'});
+function lampPost(x,z,loose){const g=new THREE.Group();g.position.set(x,0,z);const iron=lam('#2a2230',{emissive:'#0a0810'});
   const post=new THREE.Mesh(new THREE.CylinderGeometry(.06,.09,3.3,8),iron);post.position.y=1.65;g.add(post);
   const base=new THREE.Mesh(new THREE.CylinderGeometry(.16,.2,.25,8),iron);base.position.y=.12;g.add(base);
   const lan=new THREE.Mesh(new THREE.BoxGeometry(.26,.34,.26),basic('#ffd890'));lan.position.y=3.45;g.add(lan);
   const capm=new THREE.Mesh(new THREE.ConeGeometry(.24,.2,4),iron);capm.rotation.y=Math.PI/4;capm.position.y=3.72;g.add(capm);
   const gl=glowSprite(1.6,0xffc070);gl.position.y=3.45;g.add(gl);
   const cone=new THREE.Mesh(new THREE.ConeGeometry(1.5,3.2,24,1,true),new THREE.MeshBasicMaterial({color:0xffc880,transparent:true,opacity:.07,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false}));
-  cone.position.y=1.65;g.add(cone);scene.add(g);LAMPS.push({x,z});}
+  cone.position.y=1.65;g.add(cone);scene.add(g);if(!loose)LAMPS.push({x,z});return g;}
 function buildPlaza(){
   // tall central pole wrapped in marigold, crowned with a big kandil
   const H=14;const pole=new THREE.Mesh(new THREE.CylinderGeometry(.16,.26,H,12),new THREE.MeshLambertMaterial({map:canvasTex(64,512,(g,w,h)=>{for(let i=0;i<32;i++){g.fillStyle=i%2?'#f3e6cf':'#c4283d';g.save();g.translate(0,i*16);g.transform(1,.4,0,1,0,0);g.fillRect(-20,0,w+40,16);g.restore();}})}));
@@ -817,7 +842,7 @@ function buildPlaza(){
   STALLS.forEach((s,i)=>{const a=s.group.localToWorld(new V3(0,3.9,1.7));stringLights(top,a,1.6,26,hues);
     bunting(new V3(C.x,H-2.6,C.z),s.group.localToWorld(new V3(0,3.2,1.9)),1.4);
     const t=.58;kandil(top.x+(a.x-top.x)*t,top.y+(a.y-top.y)*t-Math.sin(Math.PI*t)*1.6-.9,top.z+(a.z-top.z)*t,['#ff4f7e','#ffb627','#22c7b8','#9b7bff','#ff7a1a','#4ade80'][i%6]);});
-  for(let k=0;k<18;k++){if(k===7)continue;/* KollabKit stand stands in this gap */const a=Math.PI/2+SLOT*(k+.5);const r=RING.walk+.7;lampPost(C.x+Math.cos(a)*r,C.z+Math.sin(a)*r);}
+  for(let k=0;k<18;k++){const a=Math.PI/2+SLOT*(k+.5),r=RING.walk+.7,gap=k===7||k===10;/* brand stalls can take these two gaps */const g=lampPost(C.x+Math.cos(a)*r,C.z+Math.sin(a)*r,gap);if(gap)GAP_LAMPS[k]=g;}
   // ring of string lights linking the lamp posts
   for(let i=0;i<LAMPS.length;i++){const a=LAMPS[i],b=LAMPS[(i+1)%LAMPS.length];const pa=new V3(a.x,3.3,a.z),pb=new V3(b.x,3.3,b.z);if(pa.distanceTo(pb)<10)stringLights(pa,pb,.6,12,[42,48,30]);}
   const hint=textSprite('Maidan · burst crackers here',{size:.5});hint.position.set(C.x,3.6,C.z+9);scene.add(hint);
@@ -921,13 +946,15 @@ function headToward(g,r,x,y,z,range,dt){_tp.set(x,y,z);const d=Math.hypot(g.posi
   r.head.rotation.y+=(ang-r.head.rotation.y)*Math.min(1,dt*4);}
 const NPCS=[];
 function buildPeople(){
-  for(let i=0;i<22;i++){const g=person();const sa=rand(0,6.283),sr=rand(16.5,20.2);const n={g,x:C.x+Math.cos(sa)*sr,z:C.z+Math.sin(sa)*sr,tx:0,tz:0,sp:rand(.75,1.2),ph:Math.random()*6,wait:rand(0,3)};n.tx=n.x;n.tz=n.z;g.position.set(n.x,0,n.z);
+  for(let i=0;i<22;i++){const g=person();const sa=rand(0,6.283),sr=rand(16.5,20.2);const n={g,x:C.x+Math.cos(sa)*sr,z:C.z+Math.sin(sa)*sr,tx:0,tz:0,vx:0,vz:0,sp:rand(.75,1.2),ph:Math.random()*6,wait:rand(0,3)};n.tx=n.x;n.tz=n.z;g.position.set(n.x,0,n.z);
     const r=g.userData.rig;
     if(Math.random()<.3){const l=glowSprite(.45,0xffb060);l.position.set(0,-.36,0);r.arms[1].el.add(l);n.lamp=true;}
     else if(Math.random()<.35){const col=pick(['#ff4f7e','#ffb627','#22c7b8','#9b7bff']);const b=new THREE.Mesh(new THREE.SphereGeometry(.16,10,8),basic(col));b.scale.y=1.2;b.position.set(0,-1.1,0);
       const st=new THREE.Mesh(new THREE.CylinderGeometry(.004,.004,.8,3),new THREE.MeshBasicMaterial({color:0xdddddd}));st.position.set(0,-.7,0);const hold=new THREE.Group();hold.add(b,st);hold.rotation.x=Math.PI;r.arms[1].el.add(hold);hold.position.y=-.3;n.balloon=true;}
     NPCS.push(n);}
-  for(let i=0;i<4;i++){const g=person({kid:true});NPCS.push({g,kid:true,ang:i/4*Math.PI*2,r:rand(7.5,9.5),sp:rand(.25,.4)*(Math.random()<.5?-1:1),ph:Math.random()*6});}
+  // each kid circles on its own ring, all the same way round, so they never run into each other
+  const kd=Math.random()<.5?-1:1;
+  for(let i=0;i<4;i++){const g=person({kid:true});NPCS.push({g,kid:true,ang:i/4*Math.PI*2,r:7.6+i*.6,sp:rand(.25,.4)*kd,ph:Math.random()*6});}
 }
 const BW={x:-11.9,z:C.z+14.2,g:null,balloons:[]};
 function buildBalloonWala(){const g=person({col:'#f3e6cf',plain:true});g.position.set(BW.x,0,BW.z);g.rotation.y=-.6;BW.g=g;
@@ -1085,52 +1112,106 @@ function buildRides(){
   for(const R of RIDES){R.npcG=R.npc.map(i=>{const w=new THREE.Group(),g=person({plain:true,scale:1});g.rotation.y=Math.PI;w.add(g);scene.add(w);
     g.traverse(m=>{if(m.geometry===blobGeo)m.visible=false;});sitPose(g.userData.rig,R.astride);return{w,i};});}
 }
-/* ================= sponsor: KollabKit ================= */
-// One stand on the far side of the ring, plus a hoarding on the entry lane and one at the jhoola ground.
-const KK_URL='https://kollabkit.com/?utm_source=phatake-bazaar&utm_medium=game&utm_campaign=diwali-2026';
-const AD_ANG=Math.PI/2+SLOT*7.5;// the gap between Diya Ghar and Sivakasi Wale, by the path to the jhoolas
-const AD={name:'KollabKit',cat:'Bazaar sponsor · creator stall',type:'ad',pitch:1.05,views:{},
-  greet:[['Creators, brand deals chahiye? Creator Pro do hafte free!','क्रिएटर्स, ब्रांड डील्स चाहिए? क्रिएटर प्रो दो हफ़्ते फ़्री!'],
-    ['KollabKit: jahan creators ko brand deals milti hain.','कोलैबकिट: जहाँ क्रिएटर्स को ब्रांड डील्स मिलती हैं।']]};
-const KK_CREATORS=['A live media kit that updates itself, your own portfolio site, AI rate benchmarks, 9,800+ brands hiring now and AI-written pitches ready to send.',
-  'अपने-आप अपडेट होने वाला मीडिया किट, अपनी पोर्टफ़ोलियो वेबसाइट, AI रेट बेंचमार्क, अभी हायर कर रहे 9,800+ ब्रांड्स और भेजने को तैयार AI पिचेस।'];
-const KK_BRANDS=['Find creators with verified stats and past collabs. Barter, paid or UGC campaigns, fully managed by the KollabKit team.',
-  'वेरिफ़ाइड स्टैट्स और पिछले कोलैब्स वाले क्रिएटर्स पाइए। बार्टर, पेड या UGC कैंपेन, पूरी तरह KollabKit टीम संभालती है।'];
-function adMat(src,k=.82){const t=new THREE.TextureLoader().load(src);t.anisotropy=4;return new THREE.MeshBasicMaterial({map:t,color:new THREE.Color(k,k,k)});}
-function hoarding(src,x,z,ry,w,where){const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=ry;scene.add(g);const h=w*9/16,y0=1.5;
+/* ================= brand slots ================= */
+// Which brand goes where comes from the admin page through brands.js. The code only knows where each slot stands
+// and how to draw it: an off slot draws nothing, an on slot with no live brand shows Diwali art.
+const standAt=k=>{const a=Math.PI/2+SLOT*k;return{x:C.x+Math.cos(a)*24.1,z:C.z+Math.sin(a)*24.1,ry:Math.atan2(-Math.cos(a),-Math.sin(a))};};
+const SLOT_DEFS={
+  'stall-ring':{kind:'premium_stall',k:7,at:standAt(7.5)},// between Diya Ghar and Sivakasi Wale, by the path to the jhoolas
+  'stall-ring-b':{kind:'premium_stall',k:10,at:standAt(10.5)},// the mirror gap across the north path
+  'hoarding-entry':{kind:'hoarding',at:{x:6.2,z:-3.2,ry:-.7},w:4.4},
+  'hoarding-entry-b':{kind:'hoarding',at:{x:-6.2,z:-3.2,ry:.7},w:4.4},
+  'hoarding-jhoola':{kind:'hoarding',at:{x:-13,z:-84.6,ry:.35},w:6.4}};
+const DEFAULT_ON=['stall-ring','hoarding-entry','hoarding-jhoola'];// shown with Diwali art when the list can't be fetched
+const GAP_LAMPS={},BUILT={};
+const FEST={};
+function festiveTex(part){if(FEST[part])return FEST[part];const wide=part==='wide';
+  return FEST[part]=canvasTex(wide?1024:576,wide?576:1024,(g,w,h)=>{
+    const bg=g.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#3a1460');bg.addColorStop(1,'#12062a');g.fillStyle=bg;g.fillRect(0,0,w,h);
+    const cx=w/2,cy=h*(wide?.38:.3),R=Math.min(w,h)*(wide?.26:.3),cols=['#ff4f7e','#ffb627','#22c7b8','#9b7bff','#ff7a1a'];
+    for(let ring=4;ring>=1;ring--){const n=ring*6,rr=R*ring/4;g.fillStyle=cols[ring%cols.length];
+      for(let i=0;i<n;i++){const a=i/n*Math.PI*2;g.save();g.translate(cx+Math.cos(a)*rr*.72,cy+Math.sin(a)*rr*.72);g.rotate(a);g.beginPath();g.ellipse(0,0,rr*.3,rr*.11,0,0,Math.PI*2);g.fill();g.restore();}}
+    g.fillStyle='#ffd27a';g.beginPath();g.arc(cx,cy,R*.15,0,Math.PI*2);g.fill();
+    const n=wide?9:5,y=h*(wide?.7:.56);
+    for(let i=0;i<n;i++){const x=w*(i+.5)/n,fl=g.createRadialGradient(x,y-24,2,x,y-24,36);fl.addColorStop(0,'rgba(255,220,120,.95)');fl.addColorStop(1,'rgba(255,140,40,0)');
+      g.fillStyle=fl;g.fillRect(x-40,y-70,80,80);g.fillStyle='#ffcf5a';g.beginPath();g.ellipse(x,y-20,7,14,0,0,Math.PI*2);g.fill();
+      g.fillStyle='#b5531c';g.beginPath();g.ellipse(x,y,26,10,0,0,Math.PI);g.fill();}
+    g.textAlign='center';g.fillStyle='#ffd27a';g.font=`800 ${wide?72:60}px Mukta, sans-serif`;g.fillText('Shubh Deepavali',cx,h*(wide?.86:.69));
+    g.fillStyle='#ffb627';g.font=`700 ${wide?46:42}px Mukta, sans-serif`;g.fillText('शुभ दीपावली',cx,h*(wide?.95:.77));});}// the stall counter hides the bottom of the tall panel
+function artMat(part,k=.82){const m=new THREE.MeshBasicMaterial({map:festiveTex(part),color:new THREE.Color(k,k,k)});m.userData={state:'festive',tok:0};return m;}
+// brand artwork replaces the Diwali art only once it has loaded; a failed load leaves the Diwali art
+function setArt(m,url,part){const tok=++m.userData.tok;if(m.map&&m.map!==FEST[part])m.map.dispose();m.map=festiveTex(part);m.userData.state='festive';m.needsUpdate=true;
+  if(typeof url!=='string'||!/^https:\/\//.test(url))return;
+  new THREE.TextureLoader().load(url,t=>{if(m.userData.tok!==tok){t.dispose();return;}t.anisotropy=4;m.map=t;m.userData.state='brand';m.needsUpdate=true;},undefined,()=>{});}
+const SBULB=new THREE.SphereGeometry(.045,6,4);
+function slotBulbs(g,pts){const m=basic('#ffd27a');for(const p of pts){const b=new THREE.Mesh(SBULB,m);b.position.copy(p);g.add(b);}}
+function slotGroup(id,at){const g=new THREE.Group();g.position.set(at.x,0,at.z);g.rotation.y=at.ry;g.userData.slot=id;scene.add(g);return g;}
+function hitBox(g,id,w,h,d,x,y,z){const hit=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshBasicMaterial({visible:false}));hit.position.set(x,y,z);hit.userData.ad=id;g.add(hit);return hit;}
+function buildHoarding(id,d){const g=slotGroup(id,d.at),w=d.w,h=w*9/16,y0=1.5;
   const fr=new THREE.Mesh(new THREE.BoxGeometry(w+.24,h+.24,.12),lam('#2a1650',{emissive:'#1a0a33'}));fr.position.set(0,y0+h/2,-.08);g.add(fr);
-  const pic=new THREE.Mesh(new THREE.PlaneGeometry(w,h),adMat(src));pic.position.set(0,y0+h/2,0);g.add(pic);
+  const pic=new THREE.Mesh(new THREE.PlaneGeometry(w,h),artMat('wide'));pic.position.set(0,y0+h/2,0);g.add(pic);
   for(const px of[-w*.32,w*.32]){const leg=new THREE.Mesh(new THREE.CylinderGeometry(.07,.09,y0+.1,8),lam('#2a2230'));leg.position.set(px,(y0+.1)/2,-.12);g.add(leg);}
-  g.updateMatrixWorld();for(let i=0;i<=10;i++){const p=g.localToWorld(new V3(-w/2-.12+i*(w+.24)/10,y0+h+.14,.02));addBulb(p.x,p.y,p.z,275);}
+  slotBulbs(g,Array.from({length:11},(_,i)=>new V3(-w/2-.12+i*(w+.24)/10,y0+h+.14,.02)));
   const glow=glowSprite(w*1.1,0x9b5cff);glow.position.set(0,y0+h/2,-.4);glow.material.opacity=.35;g.add(glow);
-  if(!where)return;// display only: no tap, no hover
-  const hit=new THREE.Mesh(new THREE.BoxGeometry(w,h,.4),new THREE.MeshBasicMaterial({visible:false}));hit.position.set(0,y0+h/2,.1);hit.userData.ad=where;g.add(hit);clickables.push(hit);
-  AD.views[where]={pos:g.localToWorld(new V3(0,y0+h/2,w*.95)),look:g.localToWorld(new V3(0,y0+h/2,0))};}
-function buildAds(){
-  // the stand: same footprint and facing as a stall, slotted into the gap
-  const g=new THREE.Group();g.position.set(C.x+Math.cos(AD_ANG)*24.1,0,C.z+Math.sin(AD_ANG)*24.1);g.rotation.y=Math.atan2(-Math.cos(AD_ANG),-Math.sin(AD_ANG));scene.add(g);
+  const hit=hitBox(g,id,w,h,.4,0,y0+h/2,.1);g.updateMatrixWorld();const Lw=(x,y,z)=>g.localToWorld(new V3(x,y,z));
+  return {id,g,hit,arts:{wide:pic.material},center:Lw(0,y0+h/2,0),stand:Lw(0,0,w*.9+1),
+    sponsor:{type:'ad',cat:'Sponsored',name:'',pitch:1,greet:[],qa:[],campaign:null,dlgPos:Lw(0,y0+h/2,w*.95),dlgLook:Lw(0,y0+h/2,0)}};}
+// the stand: same footprint and facing as a stall, slotted into a gap in the ring
+function buildStand(id,d){const g=slotGroup(id,d.at);
   const purple=lam('#5b21b6',{emissive:'#2a0f5a'}),dark=lam('#140b26',{emissive:'#0a0516'});
   const add=(geo,mat,x,y,z)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);g.add(m);return m;};
   add(new THREE.BoxGeometry(2.8,.12,1.7),dark,0,.06,0);
   add(new THREE.BoxGeometry(2.5,3.5,.12),dark,0,1.75,-.66);
   for(const sx of[-1.27,1.27])add(new THREE.BoxGeometry(.1,3.5,.16),purple,sx,1.75,-.62);
-  add(new THREE.PlaneGeometry(1.62,2.88),adMat('ads/kollabkit-offer-tall.jpg',.72),0,1.95,-.59);
-  add(new THREE.PlaneGeometry(2.7,1.52),adMat('ads/kollabkit-brand.jpg'),0,4.3,-.6);
+  const tall=add(new THREE.PlaneGeometry(1.62,2.88),artMat('tall',.72),0,1.95,-.59);
+  const head=add(new THREE.PlaneGeometry(2.7,1.52),artMat('wide'),0,4.3,-.6);
   add(new THREE.BoxGeometry(2.82,1.64,.08),purple,0,4.3,-.66);
   add(new THREE.BoxGeometry(2.3,1,.62),purple,0,.5,.38);
-  const sign=canvasTex(1024,160,(c,w,h)=>{c.fillStyle='#1a0f2e';c.fillRect(0,0,w,h);c.fillStyle='#c4a6ff';c.font='800 60px Mukta, sans-serif';c.textAlign='center';c.textBaseline='middle';
-    c.fillText('KOLLABKIT · CREATOR PRO FREE FOR 2 WEEKS',w/2,h/2+4);});
-  add(new THREE.PlaneGeometry(2.24,.35),new THREE.MeshBasicMaterial({map:sign}),0,.62,.695);
-  const kp=person({col:'#7c3aed',pants:'#2b2140',plain:true,scale:1});kp.position.set(.82,0,-.25);kp.rotation.y=-.25;g.add(kp);AD.keeper=kp;
+  const sc=document.createElement('canvas');sc.width=1024;sc.height=160;const st=new THREE.CanvasTexture(sc);st.anisotropy=4;
+  add(new THREE.PlaneGeometry(2.24,.35),new THREE.MeshBasicMaterial({map:st}),0,.62,.695);
+  const kp=person({col:'#7c3aed',pants:'#2b2140',plain:true,scale:1});kp.position.set(.82,0,-.25);kp.rotation.y=-.25;g.add(kp);
   const glow=glowSprite(4.2,0x9b5cff);glow.position.set(0,2.4,-1.1);glow.material.opacity=.45;g.add(glow);
-  g.updateMatrixWorld();for(let i=0;i<=8;i++){const p=g.localToWorld(new V3(-1.41+i*.3525,5.15,-.6));addBulb(p.x,p.y,p.z,275);}
-  const hit=new THREE.Mesh(new THREE.BoxGeometry(2.8,5,1.8),new THREE.MeshBasicMaterial({visible:false}));hit.position.y=2.5;hit.userData.ad='stand';g.add(hit);clickables.push(hit);
-  const Lw=(x,y,z)=>g.localToWorld(new V3(x,y,z));
-  AD.front=Lw(0,0,2.2);AD.z=7;AD.views.stand={pos:Lw(.3,1.8,3.4),look:Lw(0,2.1,-.3)};
-  // hoardings: entry lane (the first thing past the start) and the back of the jhoola ground
-  hoarding('ads/kollabkit-offer-wide.jpg',6.2,-3.2,-.7,4.4,null);
-  hoarding('ads/kollabkit-brand.jpg',-13,-84.6,.35,6.4,'jhoola');}
-function openAd(where){const v=AD.views[where]||AD.views.stand;AD.dlgPos=v.pos;AD.dlgLook=v.look;openDialog(AD);}
+  slotBulbs(g,Array.from({length:9},(_,i)=>new V3(-1.41+i*.3525,5.15,-.6)));
+  const hit=hitBox(g,id,2.8,5,1.8,0,2.5,0);g.updateMatrixWorld();const Lw=(x,y,z)=>g.localToWorld(new V3(x,y,z));
+  return {id,g,hit,arts:{wide:head.material,tall:tall.material},sign:{c:sc,t:st},center:Lw(0,2.4,-.6),stand:Lw(0,0,4.5),
+    sponsor:{type:'ad',cat:'Bazaar sponsor',name:'',pitch:1.05,greet:[],qa:[],campaign:null,keeper:kp,front:Lw(0,0,2.2),z:d.k,dlgPos:Lw(.3,1.8,3.4),dlgLook:Lw(0,2.1,-.3)}};}
+function drawSign(b,text){const c=b.sign.c,g=c.getContext('2d');let fs=60;g.fillStyle='#1a0f2e';g.fillRect(0,0,c.width,c.height);
+  g.fillStyle='#c4a6ff';g.textAlign='center';g.textBaseline='middle';g.font=`800 ${fs}px Mukta, sans-serif`;
+  while(fs>28&&g.measureText(text).width>c.width-48){fs-=4;g.font=`800 ${fs}px Mukta, sans-serif`;}g.fillText(text,c.width/2,c.height/2+4);b.sign.t.needsUpdate=true;}
+function setClickable(hit,on){const i=clickables.indexOf(hit);if(on&&i<0)clickables.push(hit);else if(!on&&i>=0)clickables.splice(i,1);}
+const okLine=l=>Array.isArray(l)&&typeof l[0]==='string'&&typeof l[1]==='string';
+function dress(b,c){b.campaign=c||null;b.seenT=0;b.seen=false;b.wasIn=false;const sp=b.sponsor,L=(c&&c.lines)||{};
+  for(const part in b.arts)setArt(b.arts[part],c&&c.art&&c.art[part],part);
+  if(DLG.s===sp)closeDialog();
+  sp.campaign=b.campaign;sp.name=c?c.brand:'';sp.greet=(L.greet||[]).filter(okLine);sp.qa=(L.qa||[]).filter(x=>x&&okLine(x.q)&&okLine(x.a));
+  if(sp.keeper){sp.keeper.visible=!!c;if(!c&&sp.bubble){sp.keeper.remove(sp.bubble);sp.bubble=null;}}
+  if(b.sign)drawSign(b,c?c.brand.toUpperCase():'SHUBH DEEPAVALI');}
+function showSlot(b,on){b.g.visible=on;setClickable(b.hit,on&&!!b.campaign);if(!on&&DLG.s===b.sponsor)closeDialog();
+  const k=SLOT_DEFS[b.id].k;if(k!==undefined&&GAP_LAMPS[k])GAP_LAMPS[k].visible=!on;}
+// state from brands.js ({slots:{id:{kind,campaign}}}), or null when nothing could be fetched
+function applySlots(state){const want=state?state.slots:Object.fromEntries(DEFAULT_ON.map(id=>[id,{kind:SLOT_DEFS[id].kind,campaign:null}]));
+  for(const id in SLOT_DEFS){const d=SLOT_DEFS[id],w=want[id];let b=BUILT[id];
+    if(!w||w.kind!==d.kind){if(b)showSlot(b,false);continue;}
+    if(!b)b=BUILT[id]=d.kind==='hoarding'?buildHoarding(id,d):buildStand(id,d);
+    const key=w.campaign?JSON.stringify(w.campaign):'';if(b.key!==key){b.key=key;dress(b,w.campaign);}
+    showSlot(b,true);}
+  IA=interactables();}
+function openSponsor(sp){if(sp&&sp.campaign)openDialog(sp);}
+function tapSlot(id,dist){const b=BUILT[id],sp=b&&b.g.visible&&b.sponsor;if(!sp||!sp.campaign)return;
+  if(sp.front&&dist>5.5&&!DLG.s){walkTo(sp.front.x,sp.front.z,1.1,()=>openSponsor(sp),`Walking to ${sp.name}…`);return;}openSponsor(sp);}
+// a view: on screen, within 25 m, for a second in total, once the player is in and the intro is over.
+// Time between two checks counts only when the board was in view at both, so it never credits more than was seen.
+const _frus=new THREE.Frustum(),_pv=new THREE.Matrix4();let viewAt=0;
+document.addEventListener('visibilitychange',()=>{viewAt=performance.now();for(const id in BUILT)BUILT[id].wasIn=false;});
+function slotViews(now){if(now-viewAt<250)return;const el=Math.min(1,(now-viewAt)/1000);viewAt=now;
+  const live=S.started&&CAM.intro<.05&&window.BRANDS;
+  if(live)_frus.setFromProjectionMatrix(_pv.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse));
+  for(const id in BUILT){const b=BUILT[id];if(!b.campaign||b.seen)continue;
+    const inView=!!live&&b.g.visible&&camera.position.distanceTo(b.center)<25&&_frus.containsPoint(b.center);
+    if(inView&&b.wasIn&&(b.seenT+=el)>=1){b.seen=true;BRANDS.seen(b.campaign.id);}b.wasIn=inView;}}
+function slotTick(dt,now){for(const id in BUILT){const b=BUILT[id],sp=b.sponsor;if(!b.g.visible||!sp.keeper||!sp.campaign)continue;
+    keeperAnim(sp,dt);if(sp.bubble){sp.bubbleT-=dt;if(sp.bubbleT<=0){sp.keeper.remove(sp.bubble);sp.bubble=null;}}}
+  slotViews(now);}
 function animRides(){if(RIDEG.car){RIDEG.car.rotation.y=-carRot();RIDEG.horses.forEach((h,i)=>{h.position.y=1.2+carBob(i);});}
   if(RIDEG.col)RIDEG.col.rotation.z=colAng();if(RIDEG.cs)RIDEG.cs.rotation.y=-csRot();
   for(const R of RIDES)if(R.npcG)for(const n of R.npcG)sitOn(n.w,R,n.i);}
@@ -1534,8 +1615,11 @@ function say(s,text){if(!s||!s.keeper)return;if(s.bubble){s.keeper.remove(s.bubb
 /* ================= UI basics ================= */
 let toastT=0;
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2800);}
-function renderCoins(){$('#coins').textContent=fmt(S.coins);const a=ageOf(S.age);$('#refillBtn').hidden=!a||!S.started||S.coins>=10;if(!a||!S.started)return;
-  $('#refillBtn').title=`Refill ₹${fmt(nextRefill(a))} (half of the last purse)`;
+// below ₹100 the purse can be reset to a full one, as often as needed; the bag is kept
+const REFILL_AT=100;
+function renderCoins(){$('#coins').textContent=fmt(S.coins);const a=ageOf(S.age);$('#refillBtn').hidden=!a||!S.started||S.coins>=REFILL_AT;if(!a||!S.started)return;
+  $('#refillBtn').title=`Refill to a fresh ₹${fmt(a.amt)} purse`;
+  if(S.coins<REFILL_AT&&!S.warn.refill){S.warn.refill=true;setTimeout(()=>toast(`Running low? Tap ↻ Refill for a fresh ₹${fmt(a.amt)} purse. Your bag stays as it is.`),3200);}
   $('#purse').title=`Pocket money from ${a.from}`;const r=S.coins/(S.base||a.amt);let k=null;
   if(S.coins<=0&&!S.warn.zero)k='zero';else if(r<=.2&&S.coins>0&&!S.warn.low)k='low';else if(r<=.5&&r>.2&&!S.warn.half)k='half';
   if(r>.6){S.warn.half=S.warn.low=S.warn.zero=false;}
@@ -1571,9 +1655,9 @@ function setQuote(line){const q=$('#dlgQuote');q.textContent='"'+line[0]+'"';con
 function openDialog(s){
   if(GAME.on||CAM.ride)return;cancelGoto();unlockMouse();DLG.s=s;DLG.to=null;closeSheets();hideTip();
   $('#dlgCat').textContent=s.cat;$('#dlgTitle').textContent=s.name;
-  $('#dlgFoot').textContent=s.type==='ad'?'Sponsored by KollabKit. The link opens kollabkit.com in a new tab.':'Pretend money only. Nothing here is sold for real.';$('#dialog').hidden=false;$('#prompt').hidden=true;
+  $('#dlgFoot').textContent=s.type==='ad'?`Sponsored by ${s.name}. The link opens in a new tab.`:'Pretend money only. Nothing here is sold for real.';$('#dialog').hidden=false;$('#prompt').hidden=true;
   focusOn(s.dlgPos,s.dlgLook);
-  const g=pick(s.greet);talk(s,g,{vol:1});setQuote(g);renderChoices();}
+  const g=s.greet&&s.greet.length?pick(s.greet):null;if(g){talk(s,g,{vol:1});setQuote(g);}else $('#dlgQuote').textContent='';renderChoices();}
 function closeDialog(){if(!DLG.s)return;DLG.s=null;DLG.list=null;$('#dialog').hidden=true;unfocus();}
 function choice(label,fn,o={}){return{label,fn,quiet:o.quiet,html:o.html};}
 function renderChoices(){
@@ -1600,7 +1684,7 @@ function renderChoices(){
   } else if(s.type==='ring'){
     list.push(choice('',()=>startGame(s),{html:'Play · ₹20 for 3 rings'}));
   } else if(s.type==='shoot'){
-    list.push(choice('',()=>startGame(s),{html:'Play · ���20 for 8 shots'}));
+    list.push(choice('',()=>startGame(s),{html:'Play · ₹20 for 8 shots'}));
   } else if(s.type==='bangle'){
     list.push(choice('',()=>buyBangle(s,'#e63946',15,to),{html:'Laal chudiyan · ₹15'}));
     list.push(choice('',()=>buyBangle(s,'#3fbf5a',15,to),{html:'Hari chudiyan · ₹15'}));
@@ -1618,9 +1702,8 @@ function renderChoices(){
     list.push(choice('',()=>{buy('diya',s,to);talk(s,L.diyaBuy);},{html:'Mitti ka diya · ₹10'}));
     list.push(choice('',()=>{buy('rangoli',s,to);talk(s,L.rangoliBuy);},{html:'Rangoli kit · ₹30'}));
   } else if(s.type==='ad'){
-    list.push(choice('',()=>{try{window.open(KK_URL,'_blank','noopener');}catch(e){}toast('Opening kollabkit.com in a new tab.');},{html:'Claim Creator Pro · free for 2 weeks ↗'}));
-    list.push(choice('What do creators get?',()=>setQuote(KK_CREATORS)));
-    list.push(choice("I'm a brand",()=>setQuote(KK_BRANDS)));
+    list.push(choice(`Visit ${s.name} ↗`,()=>{if(window.BRANDS&&BRANDS.open(s.campaign))toast(`Opening ${s.name} in a new tab.`);}));
+    for(const x of s.qa)list.push(choice(x.q[0],()=>setQuote(x.a)));
   } else if(s.type==='spin'){
     list.push(choice('',()=>startGame(s),{html:'Ghumao · ₹20'}));
   } else if(s.type==='bw'){
@@ -1802,7 +1885,7 @@ function interactables(){const list=[];
   list.push({pos:new V3(BW.x,0,BW.z),r:2.6,name:'Balloon-wala',verb:'Talk',act:openBW});
   list.push({pos:new V3(DHOL.x,0,DHOL.z),r:3.5,name:'Dhol-wala',verb:'Faster beat',act:dholFast});
   for(const R of RIDES)list.push({pos:new V3(R.entry.x,0,R.entry.z),r:3.4,name:R.name,verb:'Ride',act:()=>startRide(R)});
-  list.push({pos:AD.front,r:3.2,name:'KollabKit',verb:'Talk',act:()=>openAd('stand')});
+  for(const id in BUILT){const b=BUILT[id],sp=b.sponsor;if(b.g.visible&&sp.campaign&&sp.front)list.push({pos:sp.front,r:3.2,name:sp.name,verb:'Talk',act:()=>openSponsor(sp)});}
   return list;}
 function updPrompt(){
   const p=$('#prompt');
@@ -1844,7 +1927,7 @@ $('#mapToggle').onclick=()=>{const w=$('#mapWrap');w.classList.toggle('min');$('
 
 /* ================= input ================= */
 const keys={};
-window.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||!$('#profileCard').hidden)return;keys[e.code]=true;if(!S.started)return;
+window.addEventListener('keydown',e=>{if(/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)||!$('#profileCard').hidden)return;keys[e.code]=true;if(!S.started)return;
   const n=+e.key;
   if(n>=1&&n<=9){if(DLG.s&&DLG.list&&DLG.list[n-1]){DLG.list[n-1].fn();if(DLG.s)renderChoices();return;}if(!DLG.s&&!GAME.on&&n<=ORDER.length){S.sel=ORDER[n-1];renderTray();selHint();}}
   if((e.key==='Enter'||e.code==='KeyT')&&!e.repeat&&N.room){e.preventDefault();openChat(true);return;}
@@ -1867,7 +1950,7 @@ function interact(cx,cy){
   if(u.keeper||u.balloon){const s=u.keeper||u.balloon;if(dist>5.5&&!DLG.s){walkTo(s.front.x,s.front.z,1.1,()=>openDialog(s),`Walking to ${s.name}…`);return;}if(DLG.s!==s)openDialog(s);return;}
   if(u.bw){if(dist>4&&!DLG.s){const a=new V3(player.x-BW.x,0,player.z-BW.z);if(a.lengthSq()<.01)a.set(0,0,1);a.setLength(1.7);walkTo(BW.x+a.x,BW.z+a.z,.6,openBW,'Walking to the balloon-wala…');return;}if(DLG.s!==BWS)openBW();return;}
   if(u.dhol){if(dist>6){walkTo(DHOL.x-1.3,DHOL.z+1.3,.8,dholFast,'Walking to the dhol-wala…');return;}dholFast();return;}
-  if(u.ad){if(u.ad==='stand'&&dist>5.5&&!DLG.s){walkTo(AD.front.x,AD.front.z,1.1,()=>openAd('stand'),'Walking to the KollabKit stand…');return;}openAd(u.ad);return;}
+  if(u.ad){tapSlot(u.ad,dist);return;}
   if(u.wheel||u.ride!==undefined){const R=RIDES[u.wheel?0:u.ride];if(Math.hypot(R.entry.x-player.x,R.entry.z-player.z)>4){walkTo(R.entry.x,R.entry.z,1.1,()=>startRide(R),`Walking to the ${R.name}…`);return;}startRide(R);return;}
   if(DLG.s)return;
   if(u.diya){const d=u.diya;if(d.lit){if(S.sel==='phuljhadi'&&!handSp&&S.bag.phuljhadi)lightSparkler();else walkTo(d.x,d.z,1.4);return;}
@@ -1943,9 +2026,21 @@ document.addEventListener('visibilitychange',()=>{if(!A.ctx)return;if(document.h
 $('#soundBtn').onclick=()=>setSound(!S.sound);
 $('#voiceBtn').onclick=()=>{if(!VO.ok){toast('This browser has no speech voices.');return;}setVoice(!VO.on);if(VO.on)speak(L.welcome);};
 $('#helpBtn').onclick=()=>{unlockMouse();openSheet('help');};
+/* advertise with us: the one place the game mentions selling its boards */
+$('#advBtn').onclick=()=>openSheet('adForm');
+$('#advF').onsubmit=async e=>{e.preventDefault();const v=id=>$('#'+id).value.trim(),note=$('#advNote'),send=$('#advSend');
+  const body={name:v('advName'),brand:v('advBrand'),contact:v('advContact'),interest:$('#advInterest').value,message:v('advMsg'),website:$('#advWebsite').value};
+  const miss=!body.name?'advName':!body.brand?'advBrand':body.contact.length<3?'advContact':null;
+  if(miss){note.textContent='Please add your name, your brand and how to reach you.';$('#'+miss).focus();return;}
+  send.disabled=true;note.textContent='Sending…';
+  try{const r=await fetch(((window.SB&&SB.url)||'')+'/functions/v1/enquire',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const j=await r.json().catch(()=>({}));if(!r.ok||!j.ok)throw new Error('refused');
+    note.textContent='';$('#advF').hidden=true;$('#advDone').hidden=false;}
+  catch(err){note.textContent="Couldn't send. Try again in a minute.";}
+  finally{send.disabled=false;}};
 $('#friendsBtn').onclick=()=>{audioInit();openSheet('friends');renderNet();};
 $('#heroInvite').onclick=()=>{audioInit();openSheet('friends');renderNet();};
-function enterBazaar(withSound){if(S.started)return;S.started=true;pushPresence();closeSheets();document.body.classList.remove('pre');const hero=$('#hero');hero.style.transition='opacity .8s';hero.style.opacity='0';setTimeout(()=>{hero.hidden=true;},800);
+function enterBazaar(withSound){if(S.started)return;S.started=true;renderCoins();pushPresence();closeSheets();document.body.classList.remove('pre');const hero=$('#hero');hero.style.transition='opacity .8s';hero.style.opacity='0';setTimeout(()=>{hero.hidden=true;},800);
   if(withSound){setSound(true);setVoice(true);setTimeout(()=>speak(L.welcome),900);}else audioInit();
   CAM.introT=0;{const a=ageOf(S.age);if(a)setTimeout(()=>toast(`₹${fmt(S.coins)} in your pocket from ${a.from==='Your own kamai'?'your own kamai':a.from}. Manage it well!`),1200);}
   setTimeout(()=>{if(!$('#toast').classList.contains('show'))toast(TOUCH?'Joystick to walk, drag to look, tap anywhere to walk there. Walk up to a stall and tap the prompt.':'WASD to walk, drag to look (double-click for mouse look). Tap anywhere to walk there.');},4400);}
@@ -1981,10 +2076,8 @@ function pickAge(a){audioInit();S.age=a.id;store.set('age',a.id);S.coins=S.base=
 $('#noteGo').onclick=()=>{$('#ageCard').hidden=true;if(!S.started)enterBazaar(pendingSound);else toast(`Fresh purse: ₹${fmt(S.coins)}.`);};
 $('#noteBack').onclick=()=>{$('#ageAsk').hidden=false;$('#ageNote').hidden=true;};
 $('#ageReset').onclick=()=>{closeSheets();showAgeCard();};
-// each refill is half the previous purse, never below ₹50
-function nextRefill(a){return Math.max(50,Math.round((S.base||a.amt)/2));}
-$('#refillBtn').onclick=()=>{const a=ageOf(S.age);if(!a)return;S.base=nextRefill(a);store.set('base',S.base);S.coins+=S.base;S.warn={};store.set('warn',S.warn);save();renderCoins();SND.coin();
-  toast(`Refill: ₹${fmt(S.base)} from ${a.from==='Your own kamai'?'your own kamai':a.from}. The next one is half that.`);};
+$('#refillBtn').onclick=()=>{const a=ageOf(S.age);if(!a||S.coins>=REFILL_AT)return;S.base=a.amt;store.set('base',S.base);S.coins=a.amt;S.warn={};store.set('warn',S.warn);save();renderCoins();SND.coin();
+  toast(`Refill: a fresh ₹${fmt(a.amt)} from ${a.from==='Your own kamai'?'your own kamai':a.from}.`);};
 function tryEnter(withSound){if(!$('#roomCard').hidden)return;pendingSound=withSound;if(!S.nick||!S.look){audioInit();showProfile();return;}if(!S.age){audioInit();showAgeCard();return;}enterBazaar(withSound);}
 $('#enterBtn').onclick=()=>tryEnter(true);$('#enterQuiet').onclick=()=>tryEnter(false);
 
@@ -2004,6 +2097,36 @@ $('#photoBtn').onclick=async()=>{
   }catch(e){toast(e&&e.code==='declined'?'Photo not saved.':'Could not save the photo here.');}};
 
 /* ================= ambient life ================= */
+/* walkers: three standing spots per stall front, so browsers never queue on one point */
+const NPC_SLOTS=new Map();
+function npcTarget(n){if(n.slot!==undefined){NPC_SLOTS.delete(n.slot);n.slot=undefined;}n.stuckT=0;n.best=1e9;
+  if(Math.random()<.45){const si=(Math.random()*STALLS.length)|0,free=[0,1,2].filter(k=>!NPC_SLOTS.has(si*3+k));
+    if(free.length){const k=pick(free),st=STALLS[si],ra=RING.walk-.7,ao=st.ang+(k-1)*.045;n.slot=si*3+k;NPC_SLOTS.set(n.slot,n);
+      n.tx=C.x+Math.cos(ao)*ra;n.tz=C.z+Math.sin(ao)*ra;n.browse=Math.atan2(Math.cos(st.ang),Math.sin(st.ang));return;}}
+  const a=Math.atan2(n.z-C.z,n.x-C.x)+rand(-.7,.7),rr=rand(16.4,20.2);n.tx=C.x+Math.cos(a)*rr;n.tz=C.z+Math.sin(a)*rr;n.browse=null;}
+function npcStep(n,dt){if(n.arrived){n.arrived=false;npcTarget(n);}
+  const d=Math.hypot(n.tx-n.x,n.tz-n.z);
+  if(d<.35){if(n.browse!==undefined&&n.browse!==null){n.wait=rand(3,7);n.face=n.browse;n.browse=null;}else{n.wait=Math.random()<.3?rand(1,3):0;n.face=undefined;}
+    n.arrived=true;n.vx=n.vz=0;return 0;}
+  // a spot that stays out of reach for 4s is given up for another
+  if(d<n.best-.3){n.best=d;n.stuckT=0;}else if((n.stuckT+=dt)>4){n.arrived=true;n.wait=0;n.browse=null;return Math.hypot(n.vx,n.vz);}
+  // go round the lane, never across the maidan; each direction keeps to its own side of the lane
+  const a=Math.atan2(n.z-C.z,n.x-C.x),da=wrapA(Math.atan2(n.tz-C.z,n.tx-C.x)-a);let gx=n.tx,gz=n.tz;
+  if(Math.abs(da)>.3){const tr=Math.hypot(n.tx-C.x,n.tz-C.z),lane=da>0?19:17.4,wr=Math.abs(da)>.6?lane:(lane+tr)/2,wa=a+Math.sign(da)*.3;gx=C.x+Math.cos(wa)*wr;gz=C.z+Math.sin(wa)*wr;}
+  const gd=Math.hypot(gx-n.x,gz-n.z)||1,sp=n.sp*clamp(d/.8,.35,1),fx=(gx-n.x)/gd,fz=(gz-n.z)/gd;let vx=fx*sp,vz=fz*sp;
+  // keep personal space, and step aside early for anyone ahead: both veer the same way and pass shoulder to shoulder
+  const avoid=(x,z)=>{const rx=x-n.x,rz=z-n.z,q=Math.hypot(rx,rz);if(q>2.2||q<1e-4)return;
+    if(q<.9){const k=(.9-q)/q*1.6;vx-=rx*k;vz-=rz*k;}
+    const ah=rx*fx+rz*fz,lat=rx*fz-rz*fx;if(ah>0&&Math.abs(lat)<.8){const side=Math.abs(lat)<.15?1:-Math.sign(lat),s=(1-ah/2.2)*(.8-Math.abs(lat))/.8*n.sp*1.2;vx+=side*s*fz;vz-=side*s*fx;}};
+  for(const m of NPCS)if(m!==n&&!m.kid)avoid(m.x,m.z);
+  avoid(player.x,player.z);for(const k in avatars)avoid(avatars[k].g.position.x,avatars[k].g.position.z);
+  const k=Math.min(1,dt*4),cap=n.sp*1.3;n.vx+=(vx-n.vx)*k;n.vz+=(vz-n.vz)*k;
+  let spd=Math.hypot(n.vx,n.vz);if(spd>cap){n.vx*=cap/spd;n.vz*=cap/spd;spd=cap;}
+  n.x+=n.vx*dt;n.z+=n.vz*dt;
+  // bodies never overlap: split the push with another walker, take all of it from someone standing
+  for(const m of NPCS){if(m===n||m.kid)continue;const ox=n.x-m.x,oz=n.z-m.z,q=Math.hypot(ox,oz);if(q<.6&&q>1e-4){const c=(.6-q)/q,sh=m.wait>0?1:.5;n.x+=ox*c*sh;n.z+=oz*c*sh;if(sh<1){m.x-=ox*c*.5;m.z-=oz*c*.5;}}}
+  {const ox=n.x-C.x,oz=n.z-C.z,rr=Math.hypot(ox,oz),cl=clamp(rr,15.9,RING.walk-.3);if(cl!==rr){n.x=C.x+ox/rr*cl;n.z=C.z+oz/rr*cl;}}
+  return spd;}
 function updPeople(dt){for(const n of NPCS){const r=n.g.userData.rig;
   if(n.kid){n.ang+=n.sp*dt;const x=Math.cos(n.ang)*n.r,z=MAIDAN.cz+Math.sin(n.ang)*n.r;const vx=-Math.sin(n.ang)*n.sp,vz=Math.cos(n.ang)*n.sp;
     n.g.position.set(x,0,z);n.g.rotation.y=Math.atan2(vx,vz);n.ph+=Math.abs(n.sp)*n.r*dt*3.6;
@@ -2014,15 +2137,8 @@ function updPeople(dt){for(const n of NPCS){const r=n.g.userData.rig;
   if(n.wait>0){n.wait-=dt;animRig(r,n.ph,0,{armsBusy:busy});
     if(n.face!==undefined)n.g.rotation.y+=wrapA(n.face-n.g.rotation.y)*Math.min(1,dt*3);
     headToward(n.g,r,player.x,1.6,player.z,4,dt);if(busy){r.arms[1].sh.rotation.x=-.5;r.arms[1].el.rotation.x=-.4;}continue;}
-  const dx=n.tx-n.x,dz=n.tz-n.z,d=Math.hypot(dx,dz);
-  if(d<.25){if(n.browse!==undefined&&n.browse!==null){n.wait=rand(3,7);n.face=n.browse;n.browse=null;}else{n.wait=Math.random()<.3?rand(1,3):0;n.face=undefined;}
-    if(Math.random()<.45){const st=pick(STALLS);const ra=RING.walk-.7,ao=st.ang+rand(-.03,.03);n.tx=C.x+Math.cos(ao)*ra;n.tz=C.z+Math.sin(ao)*ra;n.browse=Math.atan2(Math.cos(st.ang),Math.sin(st.ang));}
-    else{const a=Math.atan2(n.z-C.z,n.x-C.x)+rand(-.7,.7),rr=rand(16.4,20.2);n.tx=C.x+Math.cos(a)*rr;n.tz=C.z+Math.sin(a)*rr;n.browse=null;}continue;}
-  let vx=dx/d*n.sp,vz=dz/d*n.sp;
-  for(const m of NPCS){if(m===n||m.kid)continue;const ox=n.x-m.x,oz=n.z-m.z,od=ox*ox+oz*oz;if(od<.64&&od>1e-4){const q=Math.sqrt(od),k=(.8-q)*2.2/q;vx+=ox*k;vz+=oz*k;}}
-  const pdx=n.x-player.x,pdz=n.z-player.z,pd=Math.hypot(pdx,pdz);if(pd<1.2&&pd>1e-3){const k=(1.2-pd)*2.5/pd;vx+=pdx*k;vz+=pdz*k;}
-  const spd=Math.hypot(vx,vz);n.x+=vx*dt;n.z+=vz*dt;{const ox=n.x-C.x,oz=n.z-C.z,rr=Math.hypot(ox,oz),cl=clamp(rr,15.9,RING.walk-.3);if(cl!==rr){n.x=C.x+ox/rr*cl;n.z=C.z+oz/rr*cl;}}
-  n.ph+=spd*dt*4.5;if(spd>.05)n.g.rotation.y+=wrapA(Math.atan2(vx,vz)-n.g.rotation.y)*Math.min(1,dt*6);
+  const spd=npcStep(n,dt);
+  n.ph+=spd*dt*4.5;if(spd>.05)n.g.rotation.y+=wrapA(Math.atan2(n.vx,n.vz)-n.g.rotation.y)*Math.min(1,dt*5);
   n.g.position.set(n.x,0,n.z);animRig(r,n.ph,clamp(spd/1.1,0,1),{armsBusy:busy});
   if(busy){r.arms[0].sh.rotation.x=Math.sin(n.ph)*.4;r.arms[1].sh.rotation.x=-.45;r.arms[1].el.rotation.x=-.5;}
   r.head.rotation.y*=.9;}}
@@ -2290,7 +2406,7 @@ function frame(now){
   for(const s of STALLS){if(s.spinners)for(const w of s.spinners)w.rotation.z+=dt*(2.5+Math.sin(T+w.position.x)*1.5);if(s.keeper){keeperAnim(s,dt);if(s.bubble){s.bubbleT-=dt;if(s.bubbleT<=0){s.keeper.remove(s.bubble);s.bubble=null;}}}
     if(s.steam&&Math.random()<dt*1.5)puff(s.steam.x,s.steam.y,s.steam.z,1,.1,.12);
     if(s.balloons)for(const b of s.balloons)b.position.y=b.userData.y0+Math.sin(T*1.5+b.userData.p)*.025;}
-  if(AD.keeper){keeperAnim(AD,dt);if(AD.bubble){AD.bubbleT-=dt;if(AD.bubbleT<=0){AD.keeper.remove(AD.bubble);AD.bubble=null;}}}
+  slotTick(dt,now);
   if(BWS.bubble){BWS.bubbleT-=dt;if(BWS.bubbleT<=0){BW.g.remove(BWS.bubble);BWS.bubble=null;}}
   if(GAME.on&&GAME.type==='spin'&&GAME.spin){const st=GAME.s,sp=GAME.spin;const prev=st.spinAng;sp.v=Math.max(0,sp.v-(.9+sp.v*.35)*dt);st.spinAng+=sp.v*dt;st.wheel.rotation.z=st.spinAng;
     if(Math.floor(prev/(Math.PI/4))!==Math.floor(st.spinAng/(Math.PI/4)))tone(null,{f0:1900,f1:1500,dur:.03,gain:.06,type:'square'});
@@ -2318,10 +2434,21 @@ async function boot(){
   document.body.classList.add('pre');
   try{await Promise.race([Promise.all([document.fonts.load('56px "Yatra One"'),document.fonts.load('600 20px Mukta'),document.fonts.load('800 28px Mukta')]),new Promise(r=>setTimeout(r,2500))]);}catch(e){}
   STALLS.forEach((s,i)=>{const k=i%2===0?i/2+1:17-(i-1)/2;s.ang=Math.PI/2+SLOT*k;s.z=i*1.7;});
-  buildGround();buildGate();buildEntry();STALLS.forEach(buildStall);buildDiyas();buildPlaza();buildPools();buildCity();buildKandils();buildPeople();buildBalloonWala();buildDhol();buildWheel();buildRides();buildAds();
+  buildGround();buildGate();buildEntry();STALLS.forEach(buildStall);buildDiyas();buildPlaza();buildPools();buildCity();buildKandils();buildPeople();buildBalloonWala();buildDhol();buildWheel();buildRides();
   bulbs.count=bulbData.length;for(let i=0;i<bulbData.length;i++)bulbs.setColorAt(i,_c.setHSL(bulbData[i].h/360,1,.55));scene.add(bulbs);
   marigold.count=mgN;scene.add(marigold);flags.count=flN;scene.add(flags);
   IA=interactables();buildFPP();applyLook();
+  // brand slots: a cached list paints at once and the fresh one replaces it if it differs
+  if(window.BRANDS){BRANDS.start(applySlots);if(BRANDS.previewing){const d=document.createElement('div');d.className='pvstrip';d.textContent='Preview: not counted';document.body.appendChild(d);}}
+  else applySlots(null);
+  // read-only probe for tests/web (only with ?test=1): what each slot shows, and a way to stand in front of one or tap it
+  if(/[?&]test=1(&|$)/.test(location.search))window.__pbTest={ready:()=>true,started:()=>S.started,settled:()=>S.started&&CAM.intro<.05,
+    slots(){const o={};for(const id in BUILT){const b=BUILT[id];if(!b.g.visible)continue;const art={};for(const k in b.arts)art[k]=b.arts[k].userData.state;
+      o[id]={campaignId:b.campaign?b.campaign.id:null,groups:scene.children.filter(c=>c.userData.slot===id&&c.visible).length,art};}return o;},
+    goto(id){const b=BUILT[id],p=b?b.stand:new V3(C.x,0,C.z+2),t=b?b.center:new V3(C.x,0,C.z+30);cancelGoto();
+      player.x=p.x;player.z=p.z;player.vx=player.vz=0;player.yaw=player.tyaw=Math.atan2(p.x-t.x,p.z-t.z);player.pitch=player.tpitch=.05;},
+    tap(id){tapSlot(id,0);},
+    player:()=>[player.x,player.z]};
   resize();renderCoins();S.sel=ORDER.find(k=>S.bag[k]>0)||null;renderTray();renderInvite();
   burst(-6,20,-12,{kind:'peony',hue:42});burst(8,26,-22,{kind:'ring',hue:330});burst(1,18,-6,{kind:'willow'});
   last=performance.now();requestAnimationFrame(frame);
