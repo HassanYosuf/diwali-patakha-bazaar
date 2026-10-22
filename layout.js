@@ -79,7 +79,11 @@ function route(fx,fz,tx,tz){const a={x:fx,z:fz},b={x:tx,z:tz};if(clear(a,b))retu
   const pts=[a,...cells,b],out=[];let i=0;
   while(i<pts.length-1){let j=pts.length-1;while(j>i+1&&!clear(pts[i],pts[j]))j--;if(j<pts.length-1)out.push(pts[j]);i=j;}
   return out;}
+// where a tap off the walkable ground should lead: the nearest open spot, or the ring's edge when nothing is close
+function nearestWalkable(x,z){if(open(x,z))return{x,z};const q=clampToMap(x,z),c=nearestOpen(q.x,q.z);
+  if(c>=0)return{x:cx(c%GW),z:cz((c/GW)|0)};const dx=x-C.x,dz=z-C.z,r=Math.hypot(dx,dz)||1;return{x:C.x+dx/r*(RING.walk-.5),z:C.z+dz/r*(RING.walk-.5)};}
+
 const LAYOUT={VERSION,C,RING,NPC_BAND,SLOTS,ORDER,ENTRY,SPAWN,GATE,NORTH,JG,BOUNDS,WHEEL,MAUT,RIDES,KK,BRAND,BW,DHOL,
-  slotAt,zoneAt,clampToMap,clampToMaidan,walkable,blocked,route};
+  slotAt,zoneAt,clampToMap,clampToMaidan,walkable,blocked,route,nearestWalkable};
 if(typeof module!=='undefined'&&module.exports)module.exports=LAYOUT;else root.LAYOUT=LAYOUT;
 })(typeof window!=='undefined'?window:globalThis);

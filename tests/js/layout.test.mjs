@@ -135,3 +135,12 @@ test('the way from the gate to the back of the jhoola ground runs up the corrido
   }
   assert.ok(corridor);
 });
+
+test('nearestWalkable pulls a tap outside the fence to the nearest open ground', () => {
+  const a = L.nearestWalkable(90, -200);
+  assert.ok(L.walkable(a.x, a.z) && !L.blocked(a.x, a.z), JSON.stringify(a));
+  assert.ok(Math.hypot(a.x - 90, a.z + 200) < 8, JSON.stringify(a));
+  const b = L.nearestWalkable(0, 30);
+  assert.ok(L.walkable(b.x, b.z) && Math.hypot(b.x, b.z - 10) < 3, JSON.stringify(b));
+  assert.deepEqual(L.nearestWalkable(0, -200), { x: 0, z: -200 });
+});

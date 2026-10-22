@@ -635,7 +635,7 @@ const wood=lam('#6b3a1f'),woodDark=lam('#4a2614'),clay=lam('#b5562c'),skin=lam('
 const basic=c=>new THREE.MeshBasicMaterial({color:new THREE.Color(c).multiplyScalar(1.6)});
 const _m=new THREE.Matrix4(),_c=new THREE.Color(),_tp=new V3(),_q=new THREE.Quaternion(),_one=new V3(1,1,1);
 let ground;
-const BULB_MAX=4200;const bulbs=new THREE.InstancedMesh(new THREE.SphereGeometry(.055,6,5),new THREE.MeshBasicMaterial({color:0xffffff}),BULB_MAX);
+const BULB_MAX=6000;const bulbs=new THREE.InstancedMesh(new THREE.SphereGeometry(.055,6,5),new THREE.MeshBasicMaterial({color:0xffffff}),BULB_MAX);
 const bulbData=[];
 function addBulb(x,y,z,h){if(bulbData.length>=BULB_MAX)return;const i=bulbData.length;_m.makeTranslation(x,y,z);bulbs.setMatrixAt(i,_m);bulbData.push({h,p:Math.random()*6});}
 function wire(a,b,sag){const pts=[];for(let j=0;j<=12;j++){const t=j/12;pts.push(new V3(a.x+(b.x-a.x)*t,a.y+(b.y-a.y)*t-Math.sin(Math.PI*t)*sag,a.z+(b.z-a.z)*t));}
@@ -645,7 +645,7 @@ const MG_MAX=9000;const marigold=new THREE.InstancedMesh(new THREE.IcosahedronGe
 function garland(a,b,sag,step=.09){const d=a.distanceTo(b);const n=Math.max(4,Math.round(d/step));for(let j=0;j<=n&&mgN<MG_MAX;j++){const t=j/n;
   _m.makeTranslation(a.x+(b.x-a.x)*t,a.y+(b.y-a.y)*t-Math.sin(Math.PI*t)*sag,a.z+(b.z-a.z)*t);marigold.setMatrixAt(mgN,_m);marigold.setColorAt(mgN,_c.set(j%5===0?'#ffd23a':'#ff8c12'));mgN++;}}
 function garlandDrop(x,y,z,len){for(let j=0;j<len/0.09&&mgN<MG_MAX;j++){_m.makeTranslation(x,y-j*.09,z);marigold.setMatrixAt(mgN,_m);marigold.setColorAt(mgN,_c.set(j%4===0?'#ffd23a':'#ff8c12'));mgN++;}}
-const FL_MAX=3600;const flagGeo=new THREE.BufferGeometry();flagGeo.setAttribute('position',new THREE.Float32BufferAttribute([-.14,0,0,.14,0,0,0,-.32,0],3));flagGeo.computeVertexNormals();
+const FL_MAX=7000;const flagGeo=new THREE.BufferGeometry();flagGeo.setAttribute('position',new THREE.Float32BufferAttribute([-.14,0,0,.14,0,0,0,-.32,0],3));flagGeo.computeVertexNormals();
 const flags=new THREE.InstancedMesh(flagGeo,new THREE.MeshLambertMaterial({side:THREE.DoubleSide,emissive:'#1a0a10'}),FL_MAX);let flN=0;const flagData=[];
 function bunting(a,b,sag){const d=a.distanceTo(b);const n=Math.round(d/.42);const cols=['#ff4f7e','#ffb627','#22c7b8','#9b7bff','#ff7a1a','#f3e6cf'];
   const dir=new V3().subVectors(b,a).normalize();const yaw=Math.atan2(-dir.z,dir.x);
@@ -2418,7 +2418,7 @@ const wrapA=a=>Math.atan2(Math.sin(a),Math.cos(a));
 const goMark=new THREE.Mesh(new THREE.RingGeometry(.26,.36,36),new THREE.MeshBasicMaterial({color:0xffd060,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
 goMark.rotation.x=-Math.PI/2;goMark.visible=false;scene.add(goMark);
 function walkTo(x,z,r,then,label){
-  if(!walkable(x,z)){const dx=x-C.x,dz=z-C.z,r=Math.hypot(dx,dz)||1;x=C.x+dx/r*(RING.walk-.5);z=C.z+dz/r*(RING.walk-.5);}
+  if(!walkable(x,z)){const q=LY.nearestWalkable(x,z);x=q.x;z=q.z;}
   player.goto={x,z,r:r||.45,then,wps:route(player.x,player.z,x,z),best:1e9,stuck:0};goMark.position.set(x,.04,z);goMark.visible=true;if(label)toast(label);}
 function cancelGoto(){if(player.goto){player.goto=null;goMark.visible=false;}}
 function movePlayer(dt){
@@ -2454,7 +2454,7 @@ function movePlayer(dt){
 let last=performance.now(),T=0,bob=0,roll=0,frameN=0;
 const _wq=new THREE.Quaternion(),_wp=new V3(),_e=new THREE.Euler(0,0,0,'YXZ'),_e2=new THREE.Euler(0,0,0,'YXZ'),_ip=new V3(),_iq=new THREE.Quaternion(),_gp=new V3();
 function frame(now){
-  const dt=Math.min(.033,Math.max(0,(now-last)/1000));last=now;T+=dt;frameN++;
+  const raw=Math.max(0,(now-last)/1000),dt=Math.min(.033,raw);last=now;T+=dt;frameN++;
   const running=movePlayer(dt);
   WHEEL.rot=rideClock()*WHEEL.speed%(Math.PI*2);animRides();if(wheelRot)wheelRot.rotation.z=WHEEL.rot;
   for(let i=0;i<gondolas.length;i++){gondolaPos(i,_gp);gondolas[i].position.set(_gp.x-WHEEL.x,_gp.y,_gp.z-WHEEL.z);gondolas[i].rotation.z=Math.sin(T*1.3+i)*.04;}
@@ -2474,7 +2474,8 @@ function frame(now){
   hand.visible=!!handSp&&!VIEW.third;heldB.visible=!!S.balloon&&!VIEW.third&&!S.food;
   CAM.wF+=(CAM.tF-CAM.wF)*(1-Math.pow(.015,dt));const ef=ease(clamp(CAM.wF,0,1));
   camera.position.copy(_wp).lerp(CAM.fPos,ef);camera.quaternion.copy(_wq).slerp(CAM.fQ,ef);
-  if(CAM.introT>=0&&CAM.intro>0){CAM.introT+=dt/2.8;CAM.intro=1-ease(clamp(CAM.introT,0,1));}
+  // the fly-in runs on wall-clock time, so slow frames don't stretch it
+  if(CAM.introT>=0&&CAM.intro>0){CAM.introT+=Math.min(raw,.5)/2.8;CAM.intro=1-ease(clamp(CAM.introT,0,1));}
   if(CAM.intro>0){_ip.set(Math.sin(T*.07)*6,9+Math.sin(T*.11)*.6,LY.SPAWN.z+14+Math.cos(T*.05)*2);dummy.position.copy(_ip);dummy.lookAt(0,5,GATE_Z-20);_iq.copy(dummy.quaternion);
     camera.position.lerp(_ip,CAM.intro);camera.quaternion.slerp(_iq,CAM.intro);}
   if(shake>.01){camera.position.x+=rand(-.12,.12)*shake;camera.position.y+=rand(-.1,.1)*shake;shake*=Math.pow(.88,dt*60);}
@@ -2549,6 +2550,7 @@ async function boot(){
     tap(id){tapSlot(id,0);},
     kollabkit:()=>({stand:!!AD.keeper,boards:Object.keys(AD.views).sort()}),tapKK(where){openAd(where);},
     player:()=>[player.x,player.z],stalls:()=>STALLS.map(s=>s.name),
+    caps:()=>({bulbs:[bulbData.length,BULB_MAX],flags:[flN,FL_MAX],marigolds:[mgN,MG_MAX]}),
     rides:()=>RIDES.map(R=>R.name),ride:id=>{const R=RIDES.find(R=>R.id===id);return{x:R.entry.x,z:R.entry.z};},
     riding:()=>CAM.ride?{name:CAM.ride.r.name,eyeY:camera.position.y}:null,
     maut:()=>RIDEG.mk.map(g=>({x:g.position.x,y:g.position.y,z:g.position.z})),
