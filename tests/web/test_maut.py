@@ -25,7 +25,7 @@ def test_watch_from_the_rim_and_get_off(browser):
     r = page.evaluate("__pbTest.ride('maut')")
     x, z = page.evaluate("__pbTest.player()")
     assert abs(x - r["x"]) < 0.01 and abs(z - r["z"]) < 0.01, (x, z, r)
-    assert page.evaluate("__pbTest.walk(0,-200,60)")["arrived"]
+    assert page.evaluate("__pbTest.walk(0,-95,60)")["arrived"]
     assert rec.errors == [], rec.errors
 
 

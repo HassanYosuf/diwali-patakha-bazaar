@@ -21,7 +21,7 @@ def test_boots_on_the_new_map(browser):
 def test_walk_from_the_gate_to_the_back_of_the_jhoola_ground(browser):
     page, rec = open_game(browser)
     page.evaluate("__pbTest.place(0,8)")
-    r = walk(page, 10, -238)
+    r = walk(page, 10, -114)
     assert r["arrived"], r
     assert "Can't walk" not in (r["toast"] or ""), r
     assert rec.errors == [], rec.errors
@@ -33,7 +33,7 @@ def test_walk_across_the_ring(browser):
     s = page.evaluate("LAYOUT.slotAt(LAYOUT.ORDER.indexOf('Mishra Halwai'),LAYOUT.RING.walk-.5)")
     r = walk(page, s["x"], s["z"])
     assert r["arrived"], r
-    page.evaluate("__pbTest.place(0,-70)")
+    page.evaluate("__pbTest.place(0,-34)")
     e = page.evaluate("(()=>{const c=LAYOUT.RIDES.columbus;return{x:c.x,z:c.z+3.6};})()")
     r = walk(page, e["x"], e["z"])
     assert r["arrived"], r
@@ -42,8 +42,8 @@ def test_walk_across_the_ring(browser):
 
 def test_friend_far_away_is_drawn_where_they_are(browser):
     page, rec = open_game(browser)
-    t = page.evaluate("__pbTest.peer({p:[-60,-215,0],n:'Far',h:40})")
-    assert abs(t[0] + 60) < 0.01 and abs(t[1] + 215) < 0.01, t
+    t = page.evaluate("__pbTest.peer({p:[-40,-115,0],n:'Far',h:40})")
+    assert abs(t[0] + 40) < 0.01 and abs(t[1] + 115) < 0.01, t
     assert rec.errors == [], rec.errors
 
 
@@ -55,6 +55,6 @@ def test_no_decoration_is_dropped_for_lack_of_room(browser):
 
 def test_a_tap_past_the_fence_walks_to_the_fence(browser):
     page, rec = open_game(browser)
-    page.evaluate("__pbTest.place(60,-200)")
-    r = walk(page, 90, -200, 30)
-    assert r["x"] > 75 and abs(r["z"] + 200) < 4, r
+    page.evaluate("__pbTest.place(30,-112)")
+    r = walk(page, 60, -112, 30)
+    assert r["x"] > 38 and abs(r["z"] + 112) < 4, r
