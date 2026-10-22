@@ -416,3 +416,6 @@ enabled = true
 
 [functions.track]
 verify_jwt = false
+
+[functions.enquire]
+verify_jwt = false
