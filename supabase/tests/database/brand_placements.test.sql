@@ -2,6 +2,10 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select plan(42);
 
+-- start from empty brand tables whatever other test suites left behind (rolled back at the end)
+delete from public.stats_daily; delete from public.campaigns; delete from public.enquiries;
+update public.slots set enabled = id in ('stall-ring', 'hoarding-entry', 'hoarding-jhoola');
+
 -- fixtures (as postgres)
 insert into public.admins(email) values ('admin@test.local') on conflict do nothing;
 insert into public.campaigns(id, brand, slot_id, link, art, starts_on, ends_on, enabled) values
