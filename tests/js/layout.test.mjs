@@ -94,3 +94,63 @@ test('carts cycle through the four kinds and the brand cart sits in slot 18', ()
   const s = L.slotAt(18, L.RING.stall - 0.6);
   assert.ok(near(L.BRAND_CART.x, s.x) && near(L.BRAND_CART.z, s.z));
 });
+
+// ---- walking and routing ----
+const open = (x, z) => L.walkable(x, z) && !L.blocked(x, z);
+function mulberry32(a) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+
+test('walkable covers the lane, ring, corridor and jhoola ground only', () => {
+  const yes = [[L.SPAWN.x, L.SPAWN.z], [0, L.GATE.z], [0, -60], [0, -116], [0, -165], [60, -215]];
+  L.ORDER.forEach((n, k) => { if (n && n !== 'cart') { const s = L.slotAt(k, L.RING.walk - 0.5); yes.push([s.x, s.z]); } });
+  for (const [x, z] of yes) assert.ok(L.walkable(x, z), `${x},${z} should be walkable`);
+  for (const [x, z] of [[0.3, -64], [0, 11], [7, 0], [10, -116], [69, -150], [0, -220]]) assert.ok(!L.walkable(x, z), `${x},${z} should not be walkable`);
+});
+
+test('blocked marks rides, fenced plots and carts but not open plots', () => {
+  const yes = [[L.WHEEL.x, L.WHEEL.z], ...Object.values(L.RIDES).map((r) => [r.x, r.z]), ...L.PLOTS.map((p) => [p.x, p.z]),
+    ...jCarts().map((c) => [c.x, c.z])];
+  for (const [x, z] of yes) assert.ok(L.blocked(x, z), `${x},${z} should be blocked`);
+  for (const [x, z] of [...L.OPEN_PLOTS.map((p) => [p.x, p.z]), [0, -165]]) assert.ok(!L.blocked(x, z), `${x},${z} should be clear`);
+});
+
+function pathOk(fx, fz, tx, tz) {
+  const pts = [{ x: fx, z: fz }, ...L.route(fx, fz, tx, tz), { x: tx, z: tz }];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i], b = pts[i + 1], n = Math.max(1, Math.ceil(dist(a, b) / 0.5));
+    for (let j = 0; j <= n; j++) {
+      const x = a.x + (b.x - a.x) * j / n, z = a.z + (b.z - a.z) * j / n;
+      if (!open(x, z)) return `${x.toFixed(2)},${z.toFixed(2)} not open on leg ${i}`;
+      if (Math.hypot(x - L.C.x, z - L.C.z) < 1) return `${x.toFixed(2)},${z.toFixed(2)} within 1 m of the pole`;
+    }
+  }
+  return pts;
+}
+
+test('route keeps every step on open ground for 2,000 random walks', () => {
+  const rnd = mulberry32(42), t0 = Date.now(), B = L.BOUNDS;
+  const pt = () => { for (;;) { const x = B.x0 + rnd() * (B.x1 - B.x0), z = B.z0 + rnd() * (B.z1 - B.z0); if (open(x, z) && Math.hypot(x - L.C.x, z - L.C.z) > 1.2) return [x, z]; } };
+  for (let i = 0; i < 2000; i++) {
+    const [fx, fz] = pt(), [tx, tz] = pt(), r = pathOk(fx, fz, tx, tz);
+    assert.ok(Array.isArray(r), `walk ${i} ${fx.toFixed(1)},${fz.toFixed(1)} → ${tx.toFixed(1)},${tz.toFixed(1)}: ${r}`);
+  }
+  assert.ok(Date.now() - t0 < 20000, `took ${Date.now() - t0} ms`);
+});
+
+test('the way from the gate to the back of the jhoola ground runs up the corridor', () => {
+  const pts = pathOk(0, 8, 10, -214);
+  assert.ok(Array.isArray(pts), pts);
+  let corridor = false;
+  for (let i = 0; i < pts.length - 1; i++) for (let j = 0; j <= 40; j++) {
+    const x = pts[i].x + (pts[i + 1].x - pts[i].x) * j / 40, z = pts[i].z + (pts[i + 1].z - pts[i].z) * j / 40;
+    if (L.zoneAt(x, z) === 'corridor') corridor = true;
+  }
+  assert.ok(corridor);
+});
+
+test('wander points sit on open ground with room around them', () => {
+  assert.ok(L.WANDER.length >= 16, `${L.WANDER.length} points`);
+  for (const p of L.WANDER) {
+    assert.equal(L.zoneAt(p.x, p.z), 'jhoola');
+    for (let a = 0; a < 8; a++) assert.ok(open(p.x + Math.cos(a * Math.PI / 4) * 2, p.z + Math.sin(a * Math.PI / 4) * 2), `${p.x},${p.z}`);
+  }
+});
