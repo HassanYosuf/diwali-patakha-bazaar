@@ -9,7 +9,7 @@ run() { name=$1; pattern=$2; shift 2
 }
 run database  "^Result|^Files="  npx --prefix tests supabase test db --workdir .
 run functions "passed"           deno test --allow-env --allow-net supabase/functions
-run brands.js "^ℹ (pass|fail)"   node --test "tests/js/*.test.mjs"
+run js        "^ℹ (pass|fail)"   node --test "tests/js/*.test.mjs"
 run game      "passed"           python3 tests/web/run.py
 run admin     "passed"           python3 tests/web/run.py --local
 [ $fail = 0 ] && echo "ALL GREEN" || echo "SOMETHING FAILED"
