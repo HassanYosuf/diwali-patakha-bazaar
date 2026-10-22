@@ -1,7 +1,7 @@
 # Bigger mela: design
 
 Date: 2026-10-22
-Status: draft for review
+Status: approved 2026-10-22; building on branch `bigger-mela`
 Part 1 of 2. Part 2 builds the five new attractions (Break Dance, Drop Tower, Toy Train, Maut ka Kuan, Bumper Cars) on the plots this part reserves. It gets its own spec.
 
 ## Goal
