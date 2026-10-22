@@ -19,7 +19,7 @@ const loadLib=()=>libP||(libP=new Promise((res,rej)=>{if(window.supabase)return 
 function channel(name){
   const peers=new Map([[me,{peer:me,sameTab:true,presence:{}}]]);
   const subs=new Set();
-  const ch=client.channel('phatake:'+(name||'open'),{config:{presence:{key:me},broadcast:{self:false}}});
+  const ch=client.channel('phatake:'+(window.LAYOUT?'v'+LAYOUT.VERSION+':':'')+(name||'open'),{config:{presence:{key:me},broadcast:{self:false}}});
   let mine=null,tracked=null,lastSent=0,timer=null,closed=false,ready=false;
   const emit=chg=>{for(const s of subs)try{s.cb(chg);}catch(e){console.error(e);}};
   const fail=code=>{for(const s of subs)if(s.err)try{s.err({code});}catch(e){}};

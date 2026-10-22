@@ -19,8 +19,8 @@ const RIDES={carousel:{x:-48,z:-144,r:4},columbus:{x:-45,z:-196,hx:5.8,hz:2},cha
 const PLOTS=[{id:'breakdance',name:'Break Dance',hi:'ब्रेक डांस',x:-23,z:-166,w:18,d:18},{id:'mautkakuan',name:'Maut ka Kuan',hi:'मौत का कुआँ',x:23,z:-164,w:20,d:20},
   {id:'droptower',name:'Drop Tower',hi:'ड्रॉप टावर',x:55,z:-140,w:10,d:10},{id:'dodgem',name:'Bumper Cars',hi:'बंपर कार',x:44,z:-198,w:24,d:16}];
 const OPEN_PLOTS=[{x:-55,z:-168,w:14,d:14},{x:55,z:-166,w:14,d:14},{x:-22,z:-211,w:14,d:14}];
-const KK={k:12,entry:{x:10.5,z:-4,ry:-.7,w:4.4},jhoola:{x:-40,z:-214,ry:.25,w:6.4}};
-const BRAND={'stall-ring-b':{kind:'premium_stall',k:18},'hoarding-entry-b':{kind:'hoarding',x:-10.5,z:-4,ry:.7,w:4.4}};
+const KK={k:12,entry:{x:9,z:-4,ry:-.7,w:4.4},jhoola:{x:-40,z:-214,ry:.25,w:6.4}};
+const BRAND={'stall-ring-b':{kind:'premium_stall',k:18},'hoarding-entry-b':{kind:'hoarding',x:-9,z:-4,ry:.7,w:4.4}};
 const BW={x:-24.7,z:-35.2},DHOL={x:12,z:-28};
 
 // slot k's spot at radius r; ry turns a group so its +z faces the ring centre, as the stalls are built
