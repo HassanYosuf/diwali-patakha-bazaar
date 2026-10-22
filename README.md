@@ -52,7 +52,22 @@ Then open the printed URL. Opening `index.html` straight from disk mostly works,
 
 ## Deploy
 
-Pushes to `main` deploy automatically through Vercel. If you move the site to a custom domain, update the `og:url`, `og:image`, `twitter:image` and `canonical` URLs at the top of `index.html`.
+Pushes to `main` deploy automatically through Vercel, and Supabase deploys from the same branch:
+
+- The Supabase project `phatake-bazaar` is linked to this repo through the Supabase GitHub integration (Project Settings → Integrations → GitHub, working directory `.`, production branch `main`, **Deploy to production** on).
+- On every merge to `main` it applies new files in `supabase/migrations/` and redeploys the Edge Functions listed in `supabase/config.toml`. Auth settings and `seed.sql` in this repo are local-only and never reach production.
+- A database change is always a **new** migration file (`npx --prefix tests supabase migration new <name>`); never edit one that has already been applied.
+- Function secrets (`ALLOWED_ORIGINS`, `IP_SALT`) live in the Supabase dashboard (Edge Functions → Secrets), not in git.
+
+The first migration was applied by hand in the SQL editor, so it was recorded as applied once with:
+
+```sql
+create schema if not exists supabase_migrations;
+create table if not exists supabase_migrations.schema_migrations (version text primary key, statements text[], name text);
+insert into supabase_migrations.schema_migrations (version, name) values ('20261022000001', 'brand_placements') on conflict do nothing;
+```
+
+If you move the site to a custom domain, update the `og:url`, `og:image`, `twitter:image` and `canonical` URLs at the top of `index.html`.
 
 ## Brands
 
