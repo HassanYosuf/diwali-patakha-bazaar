@@ -36,11 +36,12 @@ function start(onData,opts={}){
   const usable=d=>d&&Array.isArray(d.slots)&&Array.isArray(d.campaigns);
   if(usable(cached))show(cached);
   if(opts.fetchPreview)Promise.resolve().then(opts.fetchPreview).then(pc=>{if(pc&&pc.slot_id){forced=pc;show(last||{slots:[],campaigns:[]});}}).catch(()=>{});
-  let timer;
-  const late=new Promise((_,rej)=>{timer=setTimeout(()=>rej(new Error('timeout')),timeoutMs);});
-  Promise.race([Promise.resolve().then(fetchAds),late]).then(data=>{clearTimeout(timer);if(!usable(data))throw new Error('bad data');
+  // after the timeout the game falls back to Diwali art, but a late answer still replaces it
+  const fallback=()=>{clearTimeout(timer);if(shown===null){shown='null';onData(null);}};
+  const timer=setTimeout(fallback,timeoutMs);
+  Promise.resolve().then(fetchAds).then(data=>{if(!usable(data))throw new Error('bad data');clearTimeout(timer);
       writeJSON(storage,ADS_KEY,data);show(data);})
-    .catch(()=>{clearTimeout(timer);if(shown===null){shown='null';onData(null);}});
+    .catch(fallback);
 }
 
 /* views and clicks: once per campaign per visit, sent to the track function every 30s and when the page is left.

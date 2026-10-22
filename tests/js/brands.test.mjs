@@ -87,6 +87,24 @@ test('start gives up after 4 seconds with nothing cached', async () => {
   }
 });
 
+test('an answer that arrives after the timeout still replaces the fallback', async () => {
+  mock.timers.enable({ apis: ['setTimeout'] });
+  try {
+    const calls = [];
+    let answer;
+    B.start((s) => calls.push(s), { fetchAds: () => new Promise((r) => { answer = r; }), storage: store(), session: store(), rnd: () => 0 });
+    mock.timers.tick(4000);
+    await tick();
+    assert.deepEqual(calls, [null]);
+    answer(DATA);
+    await tick();
+    assert.equal(calls.length, 2);
+    assert.equal(calls[1].slots['hoarding-entry'].campaign.id, 'a');
+  } finally {
+    mock.timers.reset();
+  }
+});
+
 test('start keeps the cache when the fetch fails', async () => {
   const calls = [];
   B.start((s) => calls.push(s), { fetchAds: () => Promise.reject(new Error('offline')), storage: store({ pb_ads: JSON.stringify(DATA) }), session: store() });
