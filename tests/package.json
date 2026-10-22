@@ -9,7 +9,7 @@
     "db:test": "supabase test db --workdir ..",
     "fn:serve": "supabase functions serve --workdir .. --env-file ../supabase/functions/.env.local",
     "fn:test": "deno test --allow-env --allow-net ../supabase/functions",
-    "js:test": "node --test ../tests/js",
+    "js:test": "node --test \"js/*.test.mjs\"",
     "web:test": "python3 ../tests/web/run.py"
   },
   "devDependencies": {
