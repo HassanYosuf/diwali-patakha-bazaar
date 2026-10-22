@@ -20,8 +20,10 @@ export function cors(req: Request): Headers {
   return h;
 }
 
+// Prefer headers the edge proxy sets itself; the first X-Forwarded-For entry can be written by the client.
 export function clientIp(req: Request): string {
-  return (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || "unknown";
+  const h = req.headers;
+  return (h.get("cf-connecting-ip") ?? h.get("x-real-ip") ?? (h.get("x-forwarded-for") ?? "").split(",")[0]).trim() || "unknown";
 }
 
 export async function ipHash(ip: string): Promise<string> {

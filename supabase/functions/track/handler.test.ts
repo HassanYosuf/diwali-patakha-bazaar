@@ -57,6 +57,28 @@ Deno.test("the rate key is a hash, never the raw IP", async () => {
   assert(/^trk:[0-9a-f]{64}$/.test(key), key);
 });
 
+Deno.test("a forged X-Forwarded-For can't dodge the rate limit when the proxy's own IP header is present", async () => {
+  const db = fakeDb();
+  for (const forged of ["1.1.1.1", "2.2.2.2"]) {
+    const req = new Request("http://fn/track", {
+      method: "POST",
+      headers: { "content-type": "text/plain", origin: SITE, "cf-connecting-ip": "198.51.100.20", "x-forwarded-for": `${forged}, 198.51.100.20` },
+      body: JSON.stringify({ visit: "visit-abc123", events: [{ c: C1, t: "v" }] }),
+    });
+    await handleTrack(req, db, today);
+  }
+  assertEquals(new Set(db.hits.map(([k]) => k)).size, 1);
+  const viaRealIp = fakeDb();
+  for (const forged of ["1.1.1.1", "2.2.2.2"]) {
+    await handleTrack(new Request("http://fn/track", {
+      method: "POST",
+      headers: { "content-type": "text/plain", origin: SITE, "x-real-ip": "198.51.100.21", "x-forwarded-for": forged },
+      body: JSON.stringify({ visit: "visit-abc123", events: [{ c: C1, t: "v" }] }),
+    }), viaRealIp, today);
+  }
+  assertEquals(new Set(viaRealIp.hits.map(([k]) => k)).size, 1);
+});
+
 Deno.test("malformed requests are refused", async () => {
   for (const [body, raw] of [
     [null, "{not json"],
