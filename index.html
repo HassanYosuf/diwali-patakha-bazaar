@@ -780,6 +780,8 @@ function buildGround(){
   for(const [z0,z1,hw] of [[C.z+RING.walk-1,6,ENTRY.hx+.6],[NORTH.z0-1,C.z-RING.walk+1,NORTH.hx+.4]]){const L=z1-z0;const m=new THREE.Mesh(new THREE.PlaneGeometry(hw*2,L),bmat.clone());m.material.map=brick.clone();m.material.map.repeat.set(hw*2/2,L/2);m.material.map.needsUpdate=true;
     m.rotation.x=-Math.PI/2;m.position.set(0,.013,(z0+z1)/2);m.userData.ground=true;scene.add(m);clickables.push(m);}
   const rg=new THREE.Mesh(new THREE.CircleGeometry(5,48),new THREE.MeshLambertMaterial({map:rangoliTex,transparent:true}));rg.rotation.x=-Math.PI/2;rg.position.set(C.x,.02,C.z);scene.add(rg);rg.userData.ground=true;clickables.push(rg);
+  // soft warm wash over the maidan, fading out before the stalls
+  const wash=new THREE.PointLight(0xffc78a,.9,26,1.2);wash.position.set(C.x,10,C.z);scene.add(wash);
 }
 // painted light pools: warm glow on the ground under every lamp, stall and the pole
 function buildPools(){const S0=80,cx=0,cz=C.z+4;const tex=canvasTex(1024,1024,(g,w,h)=>{const k=w/S0;const P=(x,z)=>[(x-cx+S0/2)*k,(z-cz+S0/2)*k];
@@ -921,13 +923,15 @@ function headToward(g,r,x,y,z,range,dt){_tp.set(x,y,z);const d=Math.hypot(g.posi
   r.head.rotation.y+=(ang-r.head.rotation.y)*Math.min(1,dt*4);}
 const NPCS=[];
 function buildPeople(){
-  for(let i=0;i<22;i++){const g=person();const sa=rand(0,6.283),sr=rand(16.5,20.2);const n={g,x:C.x+Math.cos(sa)*sr,z:C.z+Math.sin(sa)*sr,tx:0,tz:0,sp:rand(.75,1.2),ph:Math.random()*6,wait:rand(0,3)};n.tx=n.x;n.tz=n.z;g.position.set(n.x,0,n.z);
+  for(let i=0;i<22;i++){const g=person();const sa=rand(0,6.283),sr=rand(16.5,20.2);const n={g,x:C.x+Math.cos(sa)*sr,z:C.z+Math.sin(sa)*sr,tx:0,tz:0,vx:0,vz:0,sp:rand(.75,1.2),ph:Math.random()*6,wait:rand(0,3)};n.tx=n.x;n.tz=n.z;g.position.set(n.x,0,n.z);
     const r=g.userData.rig;
     if(Math.random()<.3){const l=glowSprite(.45,0xffb060);l.position.set(0,-.36,0);r.arms[1].el.add(l);n.lamp=true;}
     else if(Math.random()<.35){const col=pick(['#ff4f7e','#ffb627','#22c7b8','#9b7bff']);const b=new THREE.Mesh(new THREE.SphereGeometry(.16,10,8),basic(col));b.scale.y=1.2;b.position.set(0,-1.1,0);
       const st=new THREE.Mesh(new THREE.CylinderGeometry(.004,.004,.8,3),new THREE.MeshBasicMaterial({color:0xdddddd}));st.position.set(0,-.7,0);const hold=new THREE.Group();hold.add(b,st);hold.rotation.x=Math.PI;r.arms[1].el.add(hold);hold.position.y=-.3;n.balloon=true;}
     NPCS.push(n);}
-  for(let i=0;i<4;i++){const g=person({kid:true});NPCS.push({g,kid:true,ang:i/4*Math.PI*2,r:rand(7.5,9.5),sp:rand(.25,.4)*(Math.random()<.5?-1:1),ph:Math.random()*6});}
+  // each kid circles on its own ring, all the same way round, so they never run into each other
+  const kd=Math.random()<.5?-1:1;
+  for(let i=0;i<4;i++){const g=person({kid:true});NPCS.push({g,kid:true,ang:i/4*Math.PI*2,r:7.6+i*.6,sp:rand(.25,.4)*kd,ph:Math.random()*6});}
 }
 const BW={x:-11.9,z:C.z+14.2,g:null,balloons:[]};
 function buildBalloonWala(){const g=person({col:'#f3e6cf',plain:true});g.position.set(BW.x,0,BW.z);g.rotation.y=-.6;BW.g=g;
@@ -1534,8 +1538,11 @@ function say(s,text){if(!s||!s.keeper)return;if(s.bubble){s.keeper.remove(s.bubb
 /* ================= UI basics ================= */
 let toastT=0;
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2800);}
-function renderCoins(){$('#coins').textContent=fmt(S.coins);const a=ageOf(S.age);$('#refillBtn').hidden=!a||!S.started||S.coins>=10;if(!a||!S.started)return;
-  $('#refillBtn').title=`Refill ₹${fmt(nextRefill(a))} (half of the last purse)`;
+// below ₹100 the purse can be reset to a full one, as often as needed; the bag is kept
+const REFILL_AT=100;
+function renderCoins(){$('#coins').textContent=fmt(S.coins);const a=ageOf(S.age);$('#refillBtn').hidden=!a||!S.started||S.coins>=REFILL_AT;if(!a||!S.started)return;
+  $('#refillBtn').title=`Refill to a fresh ₹${fmt(a.amt)} purse`;
+  if(S.coins<REFILL_AT&&!S.warn.refill){S.warn.refill=true;setTimeout(()=>toast(`Running low? Tap ↻ Refill for a fresh ₹${fmt(a.amt)} purse. Your bag stays as it is.`),3200);}
   $('#purse').title=`Pocket money from ${a.from}`;const r=S.coins/(S.base||a.amt);let k=null;
   if(S.coins<=0&&!S.warn.zero)k='zero';else if(r<=.2&&S.coins>0&&!S.warn.low)k='low';else if(r<=.5&&r>.2&&!S.warn.half)k='half';
   if(r>.6){S.warn.half=S.warn.low=S.warn.zero=false;}
@@ -1600,7 +1607,7 @@ function renderChoices(){
   } else if(s.type==='ring'){
     list.push(choice('',()=>startGame(s),{html:'Play · ₹20 for 3 rings'}));
   } else if(s.type==='shoot'){
-    list.push(choice('',()=>startGame(s),{html:'Play · ���20 for 8 shots'}));
+    list.push(choice('',()=>startGame(s),{html:'Play · ₹20 for 8 shots'}));
   } else if(s.type==='bangle'){
     list.push(choice('',()=>buyBangle(s,'#e63946',15,to),{html:'Laal chudiyan · ₹15'}));
     list.push(choice('',()=>buyBangle(s,'#3fbf5a',15,to),{html:'Hari chudiyan · ₹15'}));
@@ -1945,7 +1952,7 @@ $('#voiceBtn').onclick=()=>{if(!VO.ok){toast('This browser has no speech voices.
 $('#helpBtn').onclick=()=>{unlockMouse();openSheet('help');};
 $('#friendsBtn').onclick=()=>{audioInit();openSheet('friends');renderNet();};
 $('#heroInvite').onclick=()=>{audioInit();openSheet('friends');renderNet();};
-function enterBazaar(withSound){if(S.started)return;S.started=true;pushPresence();closeSheets();document.body.classList.remove('pre');const hero=$('#hero');hero.style.transition='opacity .8s';hero.style.opacity='0';setTimeout(()=>{hero.hidden=true;},800);
+function enterBazaar(withSound){if(S.started)return;S.started=true;renderCoins();pushPresence();closeSheets();document.body.classList.remove('pre');const hero=$('#hero');hero.style.transition='opacity .8s';hero.style.opacity='0';setTimeout(()=>{hero.hidden=true;},800);
   if(withSound){setSound(true);setVoice(true);setTimeout(()=>speak(L.welcome),900);}else audioInit();
   CAM.introT=0;{const a=ageOf(S.age);if(a)setTimeout(()=>toast(`₹${fmt(S.coins)} in your pocket from ${a.from==='Your own kamai'?'your own kamai':a.from}. Manage it well!`),1200);}
   setTimeout(()=>{if(!$('#toast').classList.contains('show'))toast(TOUCH?'Joystick to walk, drag to look, tap anywhere to walk there. Walk up to a stall and tap the prompt.':'WASD to walk, drag to look (double-click for mouse look). Tap anywhere to walk there.');},4400);}
@@ -1981,10 +1988,8 @@ function pickAge(a){audioInit();S.age=a.id;store.set('age',a.id);S.coins=S.base=
 $('#noteGo').onclick=()=>{$('#ageCard').hidden=true;if(!S.started)enterBazaar(pendingSound);else toast(`Fresh purse: ₹${fmt(S.coins)}.`);};
 $('#noteBack').onclick=()=>{$('#ageAsk').hidden=false;$('#ageNote').hidden=true;};
 $('#ageReset').onclick=()=>{closeSheets();showAgeCard();};
-// each refill is half the previous purse, never below ₹50
-function nextRefill(a){return Math.max(50,Math.round((S.base||a.amt)/2));}
-$('#refillBtn').onclick=()=>{const a=ageOf(S.age);if(!a)return;S.base=nextRefill(a);store.set('base',S.base);S.coins+=S.base;S.warn={};store.set('warn',S.warn);save();renderCoins();SND.coin();
-  toast(`Refill: ₹${fmt(S.base)} from ${a.from==='Your own kamai'?'your own kamai':a.from}. The next one is half that.`);};
+$('#refillBtn').onclick=()=>{const a=ageOf(S.age);if(!a||S.coins>=REFILL_AT)return;S.base=a.amt;store.set('base',S.base);S.coins=a.amt;S.warn={};store.set('warn',S.warn);save();renderCoins();SND.coin();
+  toast(`Refill: a fresh ₹${fmt(a.amt)} from ${a.from==='Your own kamai'?'your own kamai':a.from}.`);};
 function tryEnter(withSound){if(!$('#roomCard').hidden)return;pendingSound=withSound;if(!S.nick||!S.look){audioInit();showProfile();return;}if(!S.age){audioInit();showAgeCard();return;}enterBazaar(withSound);}
 $('#enterBtn').onclick=()=>tryEnter(true);$('#enterQuiet').onclick=()=>tryEnter(false);
 
@@ -2004,6 +2009,36 @@ $('#photoBtn').onclick=async()=>{
   }catch(e){toast(e&&e.code==='declined'?'Photo not saved.':'Could not save the photo here.');}};
 
 /* ================= ambient life ================= */
+/* walkers: three standing spots per stall front, so browsers never queue on one point */
+const NPC_SLOTS=new Map();
+function npcTarget(n){if(n.slot!==undefined){NPC_SLOTS.delete(n.slot);n.slot=undefined;}n.stuckT=0;n.best=1e9;
+  if(Math.random()<.45){const si=(Math.random()*STALLS.length)|0,free=[0,1,2].filter(k=>!NPC_SLOTS.has(si*3+k));
+    if(free.length){const k=pick(free),st=STALLS[si],ra=RING.walk-.7,ao=st.ang+(k-1)*.045;n.slot=si*3+k;NPC_SLOTS.set(n.slot,n);
+      n.tx=C.x+Math.cos(ao)*ra;n.tz=C.z+Math.sin(ao)*ra;n.browse=Math.atan2(Math.cos(st.ang),Math.sin(st.ang));return;}}
+  const a=Math.atan2(n.z-C.z,n.x-C.x)+rand(-.7,.7),rr=rand(16.4,20.2);n.tx=C.x+Math.cos(a)*rr;n.tz=C.z+Math.sin(a)*rr;n.browse=null;}
+function npcStep(n,dt){if(n.arrived){n.arrived=false;npcTarget(n);}
+  const d=Math.hypot(n.tx-n.x,n.tz-n.z);
+  if(d<.35){if(n.browse!==undefined&&n.browse!==null){n.wait=rand(3,7);n.face=n.browse;n.browse=null;}else{n.wait=Math.random()<.3?rand(1,3):0;n.face=undefined;}
+    n.arrived=true;n.vx=n.vz=0;return 0;}
+  // a spot that stays out of reach for 4s is given up for another
+  if(d<n.best-.3){n.best=d;n.stuckT=0;}else if((n.stuckT+=dt)>4){n.arrived=true;n.wait=0;n.browse=null;return Math.hypot(n.vx,n.vz);}
+  // go round the lane, never across the maidan; each direction keeps to its own side of the lane
+  const a=Math.atan2(n.z-C.z,n.x-C.x),da=wrapA(Math.atan2(n.tz-C.z,n.tx-C.x)-a);let gx=n.tx,gz=n.tz;
+  if(Math.abs(da)>.3){const tr=Math.hypot(n.tx-C.x,n.tz-C.z),lane=da>0?19:17.4,wr=Math.abs(da)>.6?lane:(lane+tr)/2,wa=a+Math.sign(da)*.3;gx=C.x+Math.cos(wa)*wr;gz=C.z+Math.sin(wa)*wr;}
+  const gd=Math.hypot(gx-n.x,gz-n.z)||1,sp=n.sp*clamp(d/.8,.35,1),fx=(gx-n.x)/gd,fz=(gz-n.z)/gd;let vx=fx*sp,vz=fz*sp;
+  // keep personal space, and step aside early for anyone ahead: both veer the same way and pass shoulder to shoulder
+  const avoid=(x,z)=>{const rx=x-n.x,rz=z-n.z,q=Math.hypot(rx,rz);if(q>2.2||q<1e-4)return;
+    if(q<.9){const k=(.9-q)/q*1.6;vx-=rx*k;vz-=rz*k;}
+    const ah=rx*fx+rz*fz,lat=rx*fz-rz*fx;if(ah>0&&Math.abs(lat)<.8){const side=Math.abs(lat)<.15?1:-Math.sign(lat),s=(1-ah/2.2)*(.8-Math.abs(lat))/.8*n.sp*1.2;vx+=side*s*fz;vz-=side*s*fx;}};
+  for(const m of NPCS)if(m!==n&&!m.kid)avoid(m.x,m.z);
+  avoid(player.x,player.z);for(const k in avatars)avoid(avatars[k].g.position.x,avatars[k].g.position.z);
+  const k=Math.min(1,dt*4),cap=n.sp*1.3;n.vx+=(vx-n.vx)*k;n.vz+=(vz-n.vz)*k;
+  let spd=Math.hypot(n.vx,n.vz);if(spd>cap){n.vx*=cap/spd;n.vz*=cap/spd;spd=cap;}
+  n.x+=n.vx*dt;n.z+=n.vz*dt;
+  // bodies never overlap: split the push with another walker, take all of it from someone standing
+  for(const m of NPCS){if(m===n||m.kid)continue;const ox=n.x-m.x,oz=n.z-m.z,q=Math.hypot(ox,oz);if(q<.6&&q>1e-4){const c=(.6-q)/q,sh=m.wait>0?1:.5;n.x+=ox*c*sh;n.z+=oz*c*sh;if(sh<1){m.x-=ox*c*.5;m.z-=oz*c*.5;}}}
+  {const ox=n.x-C.x,oz=n.z-C.z,rr=Math.hypot(ox,oz),cl=clamp(rr,15.9,RING.walk-.3);if(cl!==rr){n.x=C.x+ox/rr*cl;n.z=C.z+oz/rr*cl;}}
+  return spd;}
 function updPeople(dt){for(const n of NPCS){const r=n.g.userData.rig;
   if(n.kid){n.ang+=n.sp*dt;const x=Math.cos(n.ang)*n.r,z=MAIDAN.cz+Math.sin(n.ang)*n.r;const vx=-Math.sin(n.ang)*n.sp,vz=Math.cos(n.ang)*n.sp;
     n.g.position.set(x,0,z);n.g.rotation.y=Math.atan2(vx,vz);n.ph+=Math.abs(n.sp)*n.r*dt*3.6;
@@ -2014,15 +2049,8 @@ function updPeople(dt){for(const n of NPCS){const r=n.g.userData.rig;
   if(n.wait>0){n.wait-=dt;animRig(r,n.ph,0,{armsBusy:busy});
     if(n.face!==undefined)n.g.rotation.y+=wrapA(n.face-n.g.rotation.y)*Math.min(1,dt*3);
     headToward(n.g,r,player.x,1.6,player.z,4,dt);if(busy){r.arms[1].sh.rotation.x=-.5;r.arms[1].el.rotation.x=-.4;}continue;}
-  const dx=n.tx-n.x,dz=n.tz-n.z,d=Math.hypot(dx,dz);
-  if(d<.25){if(n.browse!==undefined&&n.browse!==null){n.wait=rand(3,7);n.face=n.browse;n.browse=null;}else{n.wait=Math.random()<.3?rand(1,3):0;n.face=undefined;}
-    if(Math.random()<.45){const st=pick(STALLS);const ra=RING.walk-.7,ao=st.ang+rand(-.03,.03);n.tx=C.x+Math.cos(ao)*ra;n.tz=C.z+Math.sin(ao)*ra;n.browse=Math.atan2(Math.cos(st.ang),Math.sin(st.ang));}
-    else{const a=Math.atan2(n.z-C.z,n.x-C.x)+rand(-.7,.7),rr=rand(16.4,20.2);n.tx=C.x+Math.cos(a)*rr;n.tz=C.z+Math.sin(a)*rr;n.browse=null;}continue;}
-  let vx=dx/d*n.sp,vz=dz/d*n.sp;
-  for(const m of NPCS){if(m===n||m.kid)continue;const ox=n.x-m.x,oz=n.z-m.z,od=ox*ox+oz*oz;if(od<.64&&od>1e-4){const q=Math.sqrt(od),k=(.8-q)*2.2/q;vx+=ox*k;vz+=oz*k;}}
-  const pdx=n.x-player.x,pdz=n.z-player.z,pd=Math.hypot(pdx,pdz);if(pd<1.2&&pd>1e-3){const k=(1.2-pd)*2.5/pd;vx+=pdx*k;vz+=pdz*k;}
-  const spd=Math.hypot(vx,vz);n.x+=vx*dt;n.z+=vz*dt;{const ox=n.x-C.x,oz=n.z-C.z,rr=Math.hypot(ox,oz),cl=clamp(rr,15.9,RING.walk-.3);if(cl!==rr){n.x=C.x+ox/rr*cl;n.z=C.z+oz/rr*cl;}}
-  n.ph+=spd*dt*4.5;if(spd>.05)n.g.rotation.y+=wrapA(Math.atan2(vx,vz)-n.g.rotation.y)*Math.min(1,dt*6);
+  const spd=npcStep(n,dt);
+  n.ph+=spd*dt*4.5;if(spd>.05)n.g.rotation.y+=wrapA(Math.atan2(n.vx,n.vz)-n.g.rotation.y)*Math.min(1,dt*5);
   n.g.position.set(n.x,0,n.z);animRig(r,n.ph,clamp(spd/1.1,0,1),{armsBusy:busy});
   if(busy){r.arms[0].sh.rotation.x=Math.sin(n.ph)*.4;r.arms[1].sh.rotation.x=-.45;r.arms[1].el.rotation.x=-.5;}
   r.head.rotation.y*=.9;}}
