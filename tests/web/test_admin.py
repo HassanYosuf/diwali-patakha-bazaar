@@ -2,7 +2,7 @@ import datetime, json, os, re
 from run import ROOT, open_admin, reset_local, svc
 
 LOCAL_ONLY = True
-SLOT_IDS = {"stall-ring", "stall-ring-b", "hoarding-entry", "hoarding-entry-b", "hoarding-jhoola"}
+SLOT_IDS = {"stall-ring-b", "hoarding-entry-b"}
 
 
 def ist_today(offset=0):
@@ -14,6 +14,10 @@ def campaign(brand, slot, share=1, start=0, end=7, **kw):
            "starts_on": ist_today(start), "ends_on": ist_today(end)}
     row.update(kw)
     return svc("POST", "/rest/v1/campaigns", row)[0]
+
+
+def slot_on(*ids):
+    svc("PATCH", f"/rest/v1/slots?id=in.({','.join(ids)})", {"enabled": True})
 
 
 def card(page, slot):
@@ -29,18 +33,25 @@ def test_an_admin_signs_in_with_an_emailed_link_and_sees_every_slot(browser):
     assert rec.errors == [], rec.errors
 
 
-def test_slot_cards_show_rotation_shares_empty_and_off_states(browser):
+def test_slot_cards_show_rotation_shares_and_off_states(browser):
     reset_local()
-    campaign("Acme", "hoarding-entry", share=1)
-    campaign("Bolt", "hoarding-entry", share=3)
-    campaign("Later", "hoarding-entry", start=2, end=9)
+    slot_on("hoarding-entry-b")
+    campaign("Acme", "hoarding-entry-b", share=1)
+    campaign("Bolt", "hoarding-entry-b", share=3)
+    campaign("Later", "hoarding-entry-b", start=2, end=9)
     page, rec = open_admin(browser)
-    entry = card(page, "hoarding-entry").inner_text()
+    entry = card(page, "hoarding-entry-b").inner_text()
     assert "Acme" in entry and "25%" in entry, entry
     assert "Bolt" in entry and "75%" in entry, entry
     assert "Next: Later" in entry, entry
-    assert "Showing Diwali art" in card(page, "hoarding-jhoola").inner_text()
     assert "Off" in card(page, "stall-ring-b").inner_text()
+
+
+def test_an_empty_switched_on_slot_shows_diwali_art(browser):
+    reset_local()
+    slot_on("stall-ring-b")
+    page, rec = open_admin(browser)
+    assert "Showing Diwali art" in card(page, "stall-ring-b").inner_text()
 
 
 def test_switching_a_slot_on_survives_a_reload(browser):

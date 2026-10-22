@@ -196,4 +196,4 @@ Tabs:
 - The `brand-art` bucket also enforces 1 MB and JPG/PNG/WebP on the server.
 - The stall counter hides the bottom sixth of the tall panel; the admin page tells brands to keep text out of it.
 - In Supabase Auth, "Allow new users to sign up" is off and the Email provider stays on (turning email sign-ups off disables email login altogether).
-
+- **KollabKit stays as it was (owner's decision, 2026-10-22).** Its ring stall, entry-lane hoarding and jhoola billboard keep their original code, art, lines and link, and are not brand slots. Brands get only `stall-ring-b` and `hoarding-entry-b`, both off until booked. Migration `20261022000002` removes the other three slot rows. With no list to go on, the game shows KollabKit and no brand spots. The `ads/kollabkit-*` files stay.

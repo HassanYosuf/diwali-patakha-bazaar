@@ -25,7 +25,7 @@ A first-person 3D Diwali mela that runs in the browser. Walk a ring of sixteen s
 - At any shop, the "Buying for" row lets you buy crackers, food, bangles, a balloon or a phirki for another player. It comes out of your purse, lands in their bag or hand, and everyone sees it in chat. Age limits apply to the recipient too.
 - Behind the giant wheel is a jhoola ground with three more rides: Ghoda Gaadi (merry-go-round), Columbus Naav (swing boat) and Udan Khatola (flying chairs). Every ride runs off the wall clock, so all players see the same seats in the same place. Friends on a ride sit next to you (same gondola or bench where there is room) and see each other riding.
 - Everyone on the link shares the open bazaar. "Start a private aangan" makes a code like `diya-4821`, and the invite link carries it (`/#diya-4821`) so friends land straight in it. The address bar follows whichever aangan you are in, so a reload keeps you there. Opening the plain link after playing in an aangan asks whether to continue in it, start a new one or go to the open bazaar. If Realtime can't connect, the game falls back to solo play.
-- Brand boards and stalls come from Supabase, managed at `/admin`. The code knows only where each slot stands; no brand name, link or image is in the game's code. See [Brands](#brands).
+- KollabKit's stand (between Diya Ghar and Sivakasi Wale), the entry-lane hoarding and the jhoola billboard are part of the game. Other brands get two more spots, filled from Supabase and managed at `/admin`; see [Brands](#brands).
 
 ## Files
 
@@ -36,7 +36,7 @@ A first-person 3D Diwali mela that runs in the browser. Walk a ring of sixteen s
 | `brands.js` | Loads the live brand campaigns, picks one per slot per visit, counts views and clicks, and handles admin previews |
 | `sb-config.js` | Supabase project URL and public anon key, shared by the game and the admin page |
 | `admin.html` | The admin page at `/admin`: slots, campaigns, stats and enquiries |
-| `ads/` | The original KollabKit artwork, kept until it has been uploaded as campaigns in the admin page, then deleted |
+| `ads/` | KollabKit artwork for its stand, the entry-lane hoarding and the jhoola billboard (copy and link live in the `sponsor: KollabKit` section of `index.html`) |
 | `supabase/` | Database migration, the `track` and `enquire` Edge Functions, local config and database tests |
 | `tests/` | Test tooling (`tests/all.sh` runs everything); not deployed |
 | `og.jpg` | 1200×630 link preview for WhatsApp, X and others |
@@ -71,15 +71,14 @@ If you move the site to a custom domain, update the `og:url`, `og:image`, `twitt
 
 ## Brands
 
-A few fixed **slots** in the bazaar carry brands. Each slot has a kind and a place in the world, set in `index.html` (`SLOT_DEFS`):
+KollabKit's stand and two billboards are fixed parts of the game and aren't managed here. Other brands go on two **slots**, each with a kind and a place in the world set in `index.html` (`SLOT_DEFS`):
 
 | Slot | Kind | Where |
 | --- | --- | --- |
-| `stall-ring` | Premium stall (talking shopkeeper) | Ring, between Diya Ghar and Sivakasi Wale |
-| `stall-ring-b` | Premium stall | Ring, the mirror gap across the north path (starts off) |
-| `hoarding-entry` | Hoarding | Entry lane |
-| `hoarding-entry-b` | Hoarding | Entry lane, other side (starts off) |
-| `hoarding-jhoola` | Hoarding | Jhoola ground |
+| `stall-ring-b` | Premium stall (talking shopkeeper) | Ring, across the north path from KollabKit's stand |
+| `hoarding-entry-b` | Hoarding | Entry lane, facing KollabKit's hoarding |
+
+Both start switched off, so the bazaar looks as it always has until a brand is booked.
 
 A slot is **off** (nothing drawn), **on with no live brand** (Diwali art), or **on with brands** (one picked per visit, weighted by each campaign's rotation share). Everything else is data, edited at `/admin`:
 

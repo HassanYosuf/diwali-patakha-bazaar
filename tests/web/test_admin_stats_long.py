@@ -7,7 +7,7 @@ LOCAL_ONLY = True
 def test_a_long_date_range_counts_every_day(browser):
     # Supabase hands back at most 1,000 rows per request; a long range must still add up
     reset_local()
-    c = campaign("Year Long", "hoarding-entry", start=-1199, end=5)
+    c = campaign("Year Long", "hoarding-entry-b", start=-1199, end=5)
     svc("POST", "/rest/v1/stats_daily", [{"campaign_id": c["id"], "day": ist_today(-d), "views": 1, "clicks": 0} for d in range(1100)])
     page, rec = open_admin(browser)
     page.get_by_role("tab", name="Stats").click()
