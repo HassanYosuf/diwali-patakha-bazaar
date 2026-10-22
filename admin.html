@@ -60,6 +60,8 @@ input[type=checkbox]{width:auto}
 .pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:6px;padding:8px;border-radius:10px;background:var(--card2)}
 fieldset{border:1px solid var(--line);border-radius:12px;padding:10px;margin:0;min-width:0}
 legend{padding:0 6px;color:var(--muted);font-size:13px}
+a{color:var(--accent)}
+details.crow>summary{list-style:none}details.crow>summary::-webkit-details-marker{display:none}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);max-width:calc(100% - 32px);padding:10px 16px;border-radius:12px;background:#2c1f52;border:1px solid var(--line);z-index:9}
 </style>
 </head>
@@ -113,7 +115,7 @@ function el(tag,attrs={},...kids){const e=document.createElement(tag);
 const todayIST=(days=0)=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata'}).format(new Date(Date.now()+days*864e5));
 const thumb=c=>c.art&&c.art.wide?el('img',{class:'thumb',src:c.art.wide,alt:''}):el('span',{class:'thumb'});
 const KIND={premium_stall:'Premium stall',hoarding:'Hoarding',basic_stall:'Basic stall'};
-const D={slots:[],campaigns:[]};
+const D={slots:[],campaigns:[],enquiries:[]};
 let toastT;
 function toast(t){let d=$('.toast');if(!d){d=el('div',{class:'toast',role:'status'});document.body.append(d);}d.textContent=t;d.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{d.hidden=true;},4000);}
 function show(id){for(const s of ['signin','sent','denied','app'])$('#'+s).hidden=s!==id;}
@@ -131,9 +133,10 @@ async function boot(){const {data:{session}}=await sb.auth.getSession();if(!sess
   if(error||!ok){$('#deniedWho').textContent=session.user.email;show('denied');return;}
   $('#me').textContent=session.user.email;show('app');await loadAll();}
 
-async function loadAll(){const [s,c]=await Promise.all([sb.from('slots').select('*').order('id'),sb.from('campaigns').select('*').order('starts_on')]);
-  if(s.error||c.error){toast("Couldn't load: "+(s.error||c.error).message);return;}
-  D.slots=s.data;D.campaigns=c.data;for(const id in TABS)if(!$('#'+id).hidden)TABS[id]();}
+async function loadAll(){const [s,c,q]=await Promise.all([sb.from('slots').select('*').order('id'),sb.from('campaigns').select('*').order('starts_on'),
+    sb.from('enquiries').select('*').order('created_at',{ascending:false})]);
+  const bad=s.error||c.error||q.error;if(bad){toast("Couldn't load: "+bad.message);return;}
+  D.slots=s.data;D.campaigns=c.data;D.enquiries=q.data;newBadge();for(const id in TABS)if(!$('#'+id).hidden)TABS[id]();}
 
 /* tabs */
 const TABS={slots:renderSlots};
@@ -257,6 +260,57 @@ async function saveCampaign(){const err=$('#cErr'),msg=$('#cMsg'),v=id=>$('#'+id
     $('#cPreview').hidden=false;msg.textContent='Saved.';await loadAll();}
   finally{$('#cSave').disabled=false;}}
 TABS.campaigns=renderCampaigns;
+
+/* stats: views and clicks per campaign over a date range, and a CSV to send the brand */
+const pct=(c,v)=>v?(c/v*100).toFixed(1)+'%':'—';
+const csvCell=x=>{const t=String(x);return /[",\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t;};
+function toCsv(rows){return ['date,brand,slot,views,clicks,click_rate',
+  ...rows.map(r=>[r.day,r.brand,r.slot,r.views,r.clicks,r.views?(r.clicks/r.views*100).toFixed(1)+'%':''].map(csvCell).join(','))].join('\n')+'\n';}
+let SROWS=[];
+function renderStats(){
+  if(!$('#sFrom'))$('#stats').replaceChildren(el('div',{class:'row spread'},el('h2',{},'Stats'),el('div',{class:'row',style:'align-items:flex-end'},
+      el('div',{},el('label',{for:'sFrom'},'From'),el('input',{type:'date',id:'sFrom',value:todayIST(-6),onchange:loadStats})),
+      el('div',{},el('label',{for:'sTo'},'To'),el('input',{type:'date',id:'sTo',value:todayIST(),onchange:loadStats})),
+      el('button',{class:'btn',type:'button',onclick:downloadCsv},'Download CSV'))),
+    el('p',{class:'muted'},'A view is a player having the board on screen, within 25 m, for a second. Each player counts once per brand per day.'),
+    el('div',{id:'sTable',class:'list'}));
+  loadStats();}
+async function loadStats(){const from=$('#sFrom').value,to=$('#sTo').value;
+  const {data,error}=await sb.from('stats_daily').select('campaign_id,day,views,clicks').gte('day',from).lte('day',to);
+  if(error){toast("Couldn't load stats: "+error.message);return;}
+  const byId=Object.fromEntries(D.campaigns.map(c=>[c.id,c])),per={};
+  SROWS=data.map(r=>Object.assign({},r,{brand:(byId[r.campaign_id]||{}).brand||'(deleted)',slot:(byId[r.campaign_id]||{}).slot_id||''}))
+    .sort((a,b)=>a.day.localeCompare(b.day)||a.brand.localeCompare(b.brand));
+  for(const r of SROWS){const t=per[r.campaign_id]||(per[r.campaign_id]={brand:r.brand,slot:r.slot,views:0,clicks:0,days:[]});t.views+=r.views;t.clicks+=r.clicks;t.days.push(r);}
+  const ids=Object.keys(per).sort((a,b)=>per[b].views-per[a].views);
+  $('#sTable').replaceChildren(...(ids.length?ids.map(id=>{const t=per[id];return el('details',{class:'crow','data-stat':id},
+      el('summary',{class:'row',style:'width:100%;cursor:pointer'},el('b',{class:'grow'},t.brand),el('span',{class:'muted'},slotOf(t.slot).label||t.slot),
+        el('span',{},`${t.views} views`),el('span',{},`${t.clicks} clicks`),el('span',{class:'share'},pct(t.clicks,t.views))),
+      el('div',{style:'width:100%'},t.days.map(d=>el('div',{class:'row spread muted'},el('span',{},d.day),el('span',{},`${d.views} views · ${d.clicks} clicks · ${pct(d.clicks,d.views)}`)))));})
+    :[el('p',{class:'muted'},'Nothing counted in these dates yet.')]));}
+function downloadCsv(){const a=el('a',{href:URL.createObjectURL(new Blob([toCsv(SROWS)],{type:'text/csv'})),download:`phatake-bazaar-stats-${$('#sFrom').value}-to-${$('#sTo').value}.csv`});
+  document.body.append(a);a.click();a.remove();}
+TABS.stats=renderStats;
+
+/* enquiries: from "Advertise with us" in the game, newest first */
+const INTEREST={hoarding:'A hoarding',premium_stall:'A stall with a shopkeeper',basic_stall:'A simple stall',not_sure:'Not sure yet'};
+function newBadge(){const n=D.enquiries.filter(e=>e.status==='new').length,b=$('#newCount');b.textContent=n;b.hidden=!n;}
+const contactLink=t=>/^\S+@\S+\.\S+$/.test(t)?el('a',{href:'mailto:'+t},t):/^\+?[\d\s()-]{7,}$/.test(t)?el('a',{href:'tel:'+t.replace(/[^\d+]/g,'')},t):t;
+function renderEnquiries(){
+  $('#enquiries').replaceChildren(el('h2',{},'Enquiries'),el('div',{class:'list'},D.enquiries.length?D.enquiries.map(e=>{
+    const st=el('select',{'aria-label':'Status'},['new','contacted','closed'].map(x=>el('option',{value:x,selected:x===e.status},x[0].toUpperCase()+x.slice(1))));
+    st.onchange=async()=>{const {error}=await sb.from('enquiries').update({status:st.value}).eq('id',e.id);
+      if(error){st.value=e.status;toast("Couldn't save: "+error.message);return;}e.status=st.value;newBadge();};
+    const note=el('textarea',{rows:2,maxLength:2000,placeholder:'Private note (only admins see it)',value:e.note||''});
+    note.onblur=async()=>{if(note.value===(e.note||''))return;const {error}=await sb.from('enquiries').update({note:note.value}).eq('id',e.id);
+      if(error){toast("Couldn't save the note: "+error.message);return;}e.note=note.value;};
+    return el('article',{class:'card','data-enquiry':e.id},
+      el('div',{class:'row spread'},el('div',{},el('h3',{},e.brand),el('span',{class:'muted'},e.name,' · ',contactLink(e.contact))),
+        el('span',{class:'tag'},new Date(e.created_at).toLocaleString('en-IN',{timeZone:'Asia/Kolkata',dateStyle:'medium',timeStyle:'short'}))),
+      el('p',{},'Interested in: '+(INTEREST[e.interest]||e.interest)),e.message?el('p',{class:'muted'},e.message):null,
+      el('div',{class:'row'},el('div',{style:'width:160px'},st),el('button',{class:'btn',type:'button',onclick:()=>openEditor(null,{brand:e.brand,enquiry_id:e.id})},'Create campaign')),note);})
+    :el('p',{class:'muted'},'No enquiries yet. They come from "Advertise with us" in the game\'s Help panel.')));}
+TABS.enquiries=renderEnquiries;
 
 boot();
 })();
