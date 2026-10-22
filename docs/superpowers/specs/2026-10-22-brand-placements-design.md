@@ -1,7 +1,7 @@
 # Brand placements: design
 
 Date: 2026-10-22
-Status: awaiting review
+Status: approved 2026-10-22; built on branch `brand-placements`
 Part 1 of 3. The next two projects are a bigger map (brand street, food street, ghats, bigger maidan) and new movement (auto-rickshaw, map fast-travel, smoother walk). Each gets its own spec.
 
 ## Goal
@@ -184,3 +184,16 @@ Tabs:
 
 - Clone the GitHub repo next to this folder. This folder isn't a git checkout. The pedestrian, maidan-lighting and refill changes made here on 2026-10-22 move into the clone.
 - Owner approval before anything is applied to the live Supabase project.
+
+## Changes made while building
+
+- One `rate_hits` table (fixed-window counter) serves both functions instead of a separate `enquire_log`.
+- Tapping a hoarding opens a small card with a **Visit** button instead of opening the link at once, so tap-to-walk can't open tabs by accident.
+- No `basic_stall` builder yet; it comes with the brand street in project 2, which is the first place to use it.
+- The two ring-stall gaps hold a lamp post that shows while the slot is off.
+- If `bazaar_ads()` answers after the 4-second timeout, the late answer still replaces the Diwali-art fallback.
+- Views count only once the player has entered and the intro fly-in is over, and only for time the board was in view at two consecutive checks.
+- The `brand-art` bucket also enforces 1 MB and JPG/PNG/WebP on the server.
+- The stall counter hides the bottom sixth of the tall panel; the admin page tells brands to keep text out of it.
+- In Supabase Auth, "Allow new users to sign up" is off and the Email provider stays on (turning email sign-ups off disables email login altogether).
+
