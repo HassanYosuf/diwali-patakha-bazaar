@@ -1,0 +1,18 @@
+{
+  "name": "phatake-bazaar-tests",
+  "private": true,
+  "description": "Dev and test tooling only. Not deployed.",
+  "scripts": {
+    "db:start": "supabase start --workdir ..",
+    "db:stop": "supabase stop --workdir ..",
+    "db:reset": "supabase db reset --workdir ..",
+    "db:test": "supabase test db --workdir ..",
+    "fn:serve": "supabase functions serve --workdir .. --env-file ../supabase/functions/.env.local",
+    "fn:test": "deno test --allow-env --allow-net ../supabase/functions",
+    "js:test": "node --test ../tests/js",
+    "web:test": "python3 ../tests/web/run.py"
+  },
+  "devDependencies": {
+    "supabase": "2.119.0"
+  }
+}
